@@ -1,0 +1,57 @@
+
+#############################################################################
+#
+#  $Id: gp-common 1.1 2010/02/03 16:01:51 martin REL_M $
+#
+#  Description:
+#    Include file for the gp-* scripts which create graphs
+#    from various log files.
+#
+#    (c) Martin Burnicki <martin.burnicki@meinberg.de>
+#
+# ---------------------------------------------------------------------------
+#  $Log: gp-common $
+#  Revision 1.1  2010/02/03 16:01:51  martin
+#  Initial revision.
+#
+#############################################################################
+
+set_term_opts()
+{
+
+  case "$term" in
+    'ps')
+      term_opts="set terminal postscript enhanced color; set output \"$1.ps\";";
+      echo "Output goes to: $1.ps";
+    ;;
+
+    'eps')
+      term_opts="set terminal postscript eps enhanced color; set output \"$1.eps\";";
+      echo "Output goes to: $1.eps";
+    ;;
+
+    'pbm')
+      term_opts="set terminal pbm small color; set output \"$1.pbm\";";
+      echo "Output goes to: $1.pbm";
+    ;;
+
+    *)
+      term_opts=;
+    ;;
+  esac;
+}
+
+if test -z "$lmargin"; then
+  lmargin=12;
+fi;
+
+if test -z "$rmargin"; then
+  rmargin=3;
+fi;
+
+frame_opts="set grid; set nokey; set lmargin $lmargin; set rmargin $rmargin;"
+basedir="."
+loc_gp_opts=$basedir/`dirname $1`/gp_opts
+
+auto_range='[*:*]'
+
