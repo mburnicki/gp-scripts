@@ -1,0 +1,124 @@
+#!/bin/sh
+
+#############################################################################
+#
+#  $Id: gp-ntp-peerstats 1.1 2010/02/04 10:17:23 martin REL_M $
+#
+#  Description:
+#    Plot NTP peerstats files using gnuplot.
+#
+#    (c) Martin Burnicki <martin.burnicki@meinberg.de>
+#
+#  ATTENTION:
+#    By default NTP peerstats files contain statistic info for all
+#    confiured peers. However, it makes more sense to visualize only the
+#    statistics for a single peer, so the relevant information should
+#    be sorted out into a temporary file, e.g.:
+#
+#      cat peerstats | grep 172.16.3.1 > peeerstats.tmp
+#
+#    The temporary file should then be displayed.
+#
+#  Some parameters can be overridden on the command line, e.g.:
+#
+#    x=[0:100]                  limit x range (time) from 0 to 100
+#    time_offs=[-0.003:0.003]   limit time offset range from -3 to 3
+#    roundtrip=[*:*]            auto scale frequency offset (the default)
+#    roundtrip=[0:*]            limit roundtrip range from 0 to auto
+#
+# ---------------------------------------------------------------------------
+#  $Log: gp-ntp-peerstats $
+#  Revision 1.1  2010/02/04 10:17:23  martin
+#
+#############################################################################
+
+. gp-common $@
+
+set_mjd_tod()
+{
+  ## read MJD and start time of day from the loopstats file
+  IFS=' .' read mjd_from_file tod_from_file dummy < $1;
+
+  ## unless this has been overridden on the
+  if test -z "$mjd"; then
+    this_mjd=$mjd_from_file;
+    echo "MJD $this_mjd set from file";
+  else
+    this_mjd=$mjd;
+  fi;
+
+  if test -z "$tod"; then
+    this_tod=$tod_from_file;
+    echo "TOD $this_tod set from file";
+  else
+    this_tod=$tod;
+  fi;
+}
+
+
+init_graph()
+{
+  set_mjd_tod $1;
+  set_term_opts $1;
+
+  mjd_col='1';
+  tod_col='2';
+  x_vals="((\$$tod_col-$this_tod)+(\$$mjd_col-$this_mjd)*86400)";
+
+  if test -z "$x"; then
+    x=$auto_range;
+  fi;
+
+
+  time_offs_col='5'
+  time_offs_vals="(\$$time_offs_col*(-1000))"
+
+  if test -z "$time_offs"; then
+    time_offs=$auto_range;
+  fi;
+
+
+  roundtrip_col='6';
+  roundtrip_vals="(\$$roundtrip_col)";
+
+  if test -z "$roundtrip"; then
+    roundtrip=$auto_range;
+  fi;
+}
+
+
+
+while [ $# -gt 0 ]; do
+
+  init_graph $1
+
+  cd $basedir && echo "\
+    $term_opts \
+    $frame_opts \
+    set multiplot; \
+    set size 1.0, 0.5; \
+    set xrange $x; \
+    \
+    set notitle; \
+    set origin 0.0, 0.0; \
+    set xlabel 't - MJD $this_mjd TOD $this_tod [s]'; \
+    set format x \"%.0f\"; \
+    set ylabel 'round trip [ms]'; \
+    set yrange $roundtrip; \
+    set format y \"%.3f\"; \
+    plot \"$1\" using $x_vals:$roundtrip_vals with lines; \
+    \
+    set title \"File: $1\"; \
+    set origin 0.0, 0.5; \
+    \
+    set noxlabel; \
+    set format x \"\"; \
+    set ylabel 'offs [ms]'; \
+    set yrange $time_offs; \
+    set format y \"%.3f\"; \
+    set xzeroaxis lt -1; \
+    plot \"$1\" using $x_vals:$time_offs_vals with lines; \
+    " |gnuplot -persist
+
+    shift;
+done
