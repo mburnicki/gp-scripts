@@ -2,7 +2,7 @@
 
 #############################################################################
 #
-#  $Id: gp-ptp-stats 1.1 2010/03/11 16:34:51 martin REL_M $
+#  $Id: gp-ptp-stats 1.2 2010/03/24 12:07:49 martin REL_M $
 #
 #  Description:
 #    Plot PTP statistic files using gnuplot.
@@ -17,33 +17,13 @@
 #
 # ---------------------------------------------------------------------------
 #  $Log: gp-ptp-stats $
+#  Revision 1.2  2010/03/24 12:07:49  martin
+#  Moved set_mjd_tod() to gp-common.
 #  Revision 1.1  2010/03/11 16:34:51  martin
 #
 #############################################################################
 
 . gp-common $@
-
-set_mjd_tod()
-{
-  ## read MJD and start time of day from the loopstats file
-  IFS=' .' read mjd_from_file tod_from_file dummy < $1;
-
-  ## unless this has been overridden on the
-  if test -z "$mjd"; then
-    this_mjd=$mjd_from_file;
-    echo "MJD $this_mjd set from file";
-  else
-    this_mjd=$mjd;
-  fi;
-
-  if test -z "$tod"; then
-    this_tod=$tod_from_file;
-    echo "TOD $this_tod set from file";
-  else
-    this_tod=$tod;
-  fi;
-}
-
 
 init_graph()
 {
