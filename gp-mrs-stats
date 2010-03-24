@@ -1,0 +1,252 @@
+#!/bin/sh
+
+#############################################################################
+#
+#  $Id: gp-mrs-stats 1.1 2010/03/24 14:21:39 martin REL_M $
+#
+#  Description:
+#    Plot MRS statistic files using gnuplot.
+#
+#    (c) Martin Burnicki <martin.burnicki@meinberg.de>
+#
+#    Two graphs are plotted above each other, using the same time range x,
+#    and selected MRS sources t1 and t2, which can be selected from:
+#    gps, pps, irig, ntp, ptp, and frq
+#
+#    Some parameters can be overridden on the command line, e.g.:
+#
+#    x=[0:100]                  limit x range (time) from 0 to 100
+#    x=[100:*]                  start x min at 100, auto scale x max
+#    t1=ptp                     select PTP offsets for t1, default: gps
+#    t2=pps                     select PPS offsets for t1, default: ntp
+#    time_offs=[-0.003:0.003]   limit common time offset range from -3 to 3
+#    t1_offs=[-0.001:0.001]     limit t1 only time offset range from -3 to 3
+#    t2_bias=2.5                add bias 2.5 to t2 osffset range
+#
+# ---------------------------------------------------------------------------
+#  $Log: gp-mrs-stats $
+#  Revision 1.1  2010/03/24 14:21:39  martin
+#  Initial revision.
+#
+#############################################################################
+
+if test -z "$lmargin"; then
+  lmargin=17;
+fi;
+
+. gp-common $@
+
+# data:
+gps_col='3'
+gps_label='GPS offs [us]'
+
+pps_col='4'
+pps_label='PPS offs [us]'
+
+irig_col='5'
+irig_label='IRIG offs [us]'
+
+ntp_col='6'
+ntp_label='NTP offs [us]'
+
+ptp_col='7'
+ptp_label='PTP offs [us]'
+
+frq_col='8'
+frq_label='FRQ offs [us]'
+
+
+# usage: select_t1( 't1', src )
+select_t1()
+{
+# assume $1 is 't1'
+  case "$2" in
+    'gps')
+      t1_label="$gps_label";
+      t1_col="$gps_col";
+    ;;
+
+    'pps')
+      t1_label="$pps_label";
+      t1_col="$pps_col";
+    ;;
+
+    'irig')
+      t1_label="$irig_label";
+      t1_col="$irig_col";
+    ;;
+
+    'ntp')
+      t1_label=$ntp_label;
+      t1_col=$ntp_col;
+    ;;
+
+    'ptp')
+      t1_label="$ptp_label";
+      t1_col="$ptp_col";
+    ;;
+
+    'frq')
+      t1_label="$frq_label";
+      t1_col="$frq_col";
+    ;;
+
+    *)
+      echo "Select time t1: invalid $2";
+    ;;
+  esac;
+
+  if test -z "$t1_offs"; then
+    t1_offs=${time_offs-$auto_range};
+  fi;
+
+  if test -z "$t1_bias"; then
+    t1_bias='0';
+  fi;
+
+  t1_vals="(\$$t1_col*1e6-$t1_bias)"
+}
+
+
+# usage: select_t2( 't2', src )
+select_t2()
+{
+# assume $1 is 't2'
+  case "$2" in
+    'gps')
+      t2_label="$gps_label";
+      t2_col="$gps_col";
+    ;;
+
+    'pps')
+      t2_label="$pps_label";
+      t2_col="$pps_col";
+    ;;
+
+    'irig')
+      t2_label="$irig_label";
+      t2_col="$irig_col";
+    ;;
+
+    'ntp')
+      t2_label="$ntp_label";
+      t2_col="$ntp_col";
+    ;;
+
+    'ptp')
+      t2_label="$ptp_label";
+      t2_col="$ptp_col";
+    ;;
+
+    'frq')
+      t2_label="$frq_label";
+      t2_col="$frq_col";
+    ;;
+
+    *)
+      echo "Select time t1: invalid $2";
+    ;;
+  esac;
+
+  if test -z "$t2_offs"; then
+    t2_offs=${time_offs-$auto_range};
+  fi;
+
+  if test -z "$t2_bias"; then
+    t2_bias='0';
+  fi;
+
+  t2_vals="(\$$t2_col*1e6-$t2_bias)";
+}
+
+
+# usage: select_time( t1, gps )
+select_time()
+{
+  case "$1" in
+    't1')
+      select_t1 $1 $2;
+    ;;
+
+    't2')
+      select_t2 $1 $2;
+    ;;
+
+    *)
+      echo "Select time: invalid parameter 1: $1";
+      exit 1;
+    ;;
+  esac
+
+#  case "$2" in
+#    'gps')
+#      term_opts="set terminal postscript enhanced color";
+#      ${1}_label="$gps_label";
+#      ${1}_col="$gps_col";
+#      echo "Select time $1: $2 -> t1_col = $t1_col = $gps_col";
+#    ;;
+#
+#    *)
+#      echo "Select time $1: $2";
+#    ;;
+#  esac;
+
+}
+
+
+
+init_graph()
+{
+  set_mjd_tod $1;
+  set_term_opts $1;
+
+  mjd_col='1';
+  tod_col='2';
+  x_vals="((\$$tod_col-$this_tod)+(\$$mjd_col-$this_mjd)*86400)";
+
+  if test -z "$x"; then
+    x=$auto_range;
+  fi;
+
+  select_time 't1' ${t1-'gps'}
+  select_time 't2' ${t2-'ntp'}
+}
+
+
+
+while [ $# -gt 0 ]; do
+
+  init_graph $1
+
+  echo "creating graph"
+
+  cd $basedir && echo "\
+    $term_opts \
+    $frame_opts \
+    set multiplot; \
+    set size 1.0, 0.5; \
+    set xrange $x; \
+    \
+    set notitle; \
+    set origin 0.0, 0.0; \
+    set xlabel 't - MJD $this_mjd TOD $this_tod [s]'; \
+    set format x \"%.0f\"; \
+    set ylabel \"$t2_label\"; \
+    set yrange $t2_offs; \
+    set format y \"%.3f\"; \
+    plot \"$1\" using $x_vals:$t2_vals with lines; \
+    \
+    set title \"File: $1\"; \
+    set origin 0.0, 0.5; \
+    \
+    set noxlabel; \
+    set format x \"\"; \
+    set ylabel \"$t1_label\"; \
+    set yrange $t1_offs; \
+    set format y \"%.3f\"; \
+    set xzeroaxis lt -1; \
+    plot \"$1\" using $x_vals:$t1_vals with lines; \
+    " |gnuplot -persist
+
+    shift;
+done
