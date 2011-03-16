@@ -2,7 +2,7 @@
 
 #############################################################################
 #
-#  $Id: gp-mbgsvcd 1.1 2011/03/16 16:07:24 martin TEST $
+#  $Id: gp-mbgsvcd 1.1.1.1 2011/03/16 16:14:37 martin TRASH $
 #
 #  Description:
 #    Plot time offsets reported by  mbgsvcd.
@@ -18,6 +18,8 @@
 #
 # ---------------------------------------------------------------------------
 #  $Log: gp-mbgsvcd $
+#  Revision 1.1.1.1  2011/03/16 16:14:37  martin
+#  Read date/time from file for x-axis.
 #  Revision 1.1  2011/03/16 16:07:24  martin
 #
 #############################################################################
@@ -70,11 +72,14 @@ while [ $# -gt 0 ]; do
     \
     set title \"File: $1\"; \
     \
+    set xdata time; \
+    set timefmt \"%Y-%m-%d %H:%M:%S\"; \
+    \
     set ylabel 'time offs [ms]'; \
     set yrange $time_offs; \
     set format y \"%.3f\"; \
     set xzeroaxis lt -1; \
-    plot \"$1\" using $time_offs_vals with lines; \
+    plot \"$1\" using 2:$time_offs_vals with lines; \
     " |gnuplot -persist
 
     shift;
