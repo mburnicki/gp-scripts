@@ -1,7 +1,7 @@
 
 #############################################################################
 #
-#  $Id: gp-common 1.3 2013/11/14 16:10:39 martin TRASH $
+#  $Id: gp-common 1.4 2013/11/14 16:38:19 martin TRASH $
 #
 #  Description:
 #    Include file for the gp-* scripts which create graphs
@@ -11,6 +11,8 @@
 #
 # ---------------------------------------------------------------------------
 #  $Log: gp-common $
+#  Revision 1.4  2013/11/14 16:38:19  martin
+#  A function to set title.
 #  Revision 1.3  2013/11/14 16:10:39  martin
 #  Support files created by mbgadjtm.
 #  Revision 1.2  2010/03/24 12:07:49  martin
@@ -24,7 +26,7 @@ basedir="."
 auto_range='[*:*]'
 
 if test -z "$lmargin"; then
-  lmargin=15;
+  lmargin=13;
 fi;
 
 if test -z "$rmargin"; then
@@ -52,6 +54,16 @@ fi
 if test -z "$frame_opts"; then
   frame_opts="set grid; set nokey; set lmargin $lmargin; set rmargin $rmargin;"
 fi
+
+
+set_this_title()
+{
+  if test -z "$title"; then
+    this_title="File: $1"
+  else
+    this_title="$title"
+  fi
+}
 
 
 set_term_opts()
@@ -103,7 +115,8 @@ set_mjd_tod()
 
 init_mbgadjtm_graph()
 {
-  set_term_opts $1;
+  set_term_opts $1
+  set_this_title $1
 
   delta_t_col='4'
   delta_t_vals="(\$$delta_t_col/10000)"
@@ -151,11 +164,5 @@ init_mbgadjtm_graph()
 
   this_xlabel='time [s]'
   this_format_x="%.0f"
-
-  if test -z "$title"; then
-    this_title="File: $1"
-  else
-    this_title="$title"
-  fi
 }
 
