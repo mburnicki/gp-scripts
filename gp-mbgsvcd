@@ -2,10 +2,10 @@
 
 #############################################################################
 #
-#  $Id: gp-mbgsvcd 1.1.1.1 2011/03/16 16:14:37 martin TRASH $
+#  $Id: gp-mbgsvcd 1.1.1.2 2013/11/14 17:03:15 martin TRASH $
 #
 #  Description:
-#    Plot time offsets reported by  mbgsvcd.
+#    Plot time offsets reported by mbgsvcd.
 #
 #    (c) Martin Burnicki <martin.burnicki@meinberg.de>
 #
@@ -18,6 +18,8 @@
 #
 # ---------------------------------------------------------------------------
 #  $Log: gp-mbgsvcd $
+#  Revision 1.1.1.2  2013/11/14 17:03:15  martin
+#  Tmp. saved changes.
 #  Revision 1.1.1.1  2011/03/16 16:14:37  martin
 #  Read date/time from file for x-axis.
 #  Revision 1.1  2011/03/16 16:07:24  martin
@@ -33,26 +35,21 @@ init_graph()
 
   mjd_col='1';
   tod_col='2';
-  x_vals="((\$$tod_col-$this_tod)+(\$$mjd_col-$this_mjd)*86400)";
+#  x_vals="((\$$tod_col-$this_tod)+(\$$mjd_col-$this_mjd)*86400)";
 
   if test -z "$x"; then
     x=$auto_range;
   fi;
 
+#  set xdata time
+#  set timefmt "%Y-%m-%d %H:%M:%S"
 
-  time_offs_col='17'
-  time_offs_vals="(\$$time_offs_col*1000)"
+  time_offs_col='3'
+#  time_offs_vals="(\$$time_offs_col*1000)"
+  time_offs_vals="(\$$time_offs_col)"
 
   if test -z "$time_offs"; then
     time_offs=$auto_range;
-  fi;
-
-
-  freq_offs_col='4';
-  freq_offs_vals="(\$$freq_offs_col)";
-
-  if test -z "$freq_offs"; then
-    freq_offs=$auto_range;
   fi;
 }
 
@@ -72,14 +69,10 @@ while [ $# -gt 0 ]; do
     \
     set title \"File: $1\"; \
     \
-    set xdata time; \
-    set timefmt \"%Y-%m-%d %H:%M:%S\"; \
-    \
     set ylabel 'time offs [ms]'; \
     set yrange $time_offs; \
     set format y \"%.3f\"; \
-    set xzeroaxis lt -1; \
-    plot \"$1\" using 2:$time_offs_vals with lines; \
+    plot \"$1\" using $time_offs_vals with lines; \
     " |gnuplot -persist
 
     shift;

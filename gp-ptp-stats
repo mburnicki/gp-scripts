@@ -2,7 +2,7 @@
 
 #############################################################################
 #
-#  $Id: gp-ptp-stats 1.2 2010/03/24 12:07:49 martin REL_M $
+#  $Id: gp-ptp-stats 1.2.1.1 2013/11/14 17:03:45 martin TRASH $
 #
 #  Description:
 #    Plot PTP statistic files using gnuplot.
@@ -17,6 +17,7 @@
 #
 # ---------------------------------------------------------------------------
 #  $Log: gp-ptp-stats $
+#  Revision 1.2.1.1  2013/11/14 17:03:45  martin
 #  Revision 1.2  2010/03/24 12:07:49  martin
 #  Moved set_mjd_tod() to gp-common.
 #  Revision 1.1  2010/03/11 16:34:51  martin
@@ -85,7 +86,7 @@ while [ $# -gt 0 ]; do
     set ylabel 'time offs [us]'; \
     set yrange $time_offs; \
     set format y \"%.3f\"; \
-    set xzeroaxis lt -1; \
+    set xzeroaxis linetype -1; \
     plot \"$1\" using $x_vals:$time_offs_vals with lines; \
     " |gnuplot -persist
 

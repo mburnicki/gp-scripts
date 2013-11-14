@@ -2,7 +2,7 @@
 
 #############################################################################
 #
-#  $Id: gp-mbgchksystime 1.1 2013/11/14 11:40:36 martin TRASH $
+#  $Id: gp-mbgchksystime 1.1.1.1 2013/11/14 17:02:40 martin TRASH $
 #
 #  Description:
 #    Plot time offsets reported by mbgsvcd and mbgchksystime.
@@ -16,6 +16,7 @@
 #
 # ---------------------------------------------------------------------------
 #  $Log: gp-mbgchksystime $
+#  Revision 1.1.1.1  2013/11/14 17:02:40  martin
 #  Revision 1.1  2013/11/14 11:40:36  martin
 #
 #############################################################################
@@ -69,7 +70,7 @@ while [ $# -gt 0 ]; do
     set ylabel 'time offs [ms]'; \
     set yrange $time_offs; \
     set format y \"%.3f\"; \
-    set xzeroaxis lt -1; \
+    set xzeroaxis linetype -1; \
     plot \"$1\" using $x_vals_cmd$time_offs_vals with lines; \
     " |gnuplot -persist
 

@@ -2,7 +2,7 @@
 
 #############################################################################
 #
-#  $Id: gp-mrs-stats 1.1 2010/03/24 14:21:39 martin REL_M $
+#  $Id: gp-mrs-stats 1.1.1.1 2013/11/14 17:03:28 martin TRASH $
 #
 #  Description:
 #    Plot MRS statistic files using gnuplot.
@@ -25,6 +25,7 @@
 #
 # ---------------------------------------------------------------------------
 #  $Log: gp-mrs-stats $
+#  Revision 1.1.1.1  2013/11/14 17:03:28  martin
 #  Revision 1.1  2010/03/24 14:21:39  martin
 #  Initial revision.
 #
@@ -244,7 +245,7 @@ while [ $# -gt 0 ]; do
     set ylabel \"$t1_label\"; \
     set yrange $t1_offs; \
     set format y \"%.3f\"; \
-    set xzeroaxis lt -1; \
+    set xzeroaxis linetype -1; \
     plot \"$1\" using $x_vals:$t1_vals with lines; \
     " |gnuplot -persist
 

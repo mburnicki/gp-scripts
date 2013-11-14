@@ -2,7 +2,7 @@
 
 #############################################################################
 #
-#  $Id: gp-ptpd 1.1 2011/03/16 16:31:46 martin TRASH $
+#  $Id: gp-ptpd 1.1.1.1 2013/11/14 17:03:56 martin TRASH $
 #
 #  Description:
 #    Plot time offsets reported by the open source ptpd.
@@ -16,6 +16,7 @@
 #
 # ---------------------------------------------------------------------------
 #  $Log: gp-ptpd $
+#  Revision 1.1.1.1  2013/11/14 17:03:56  martin
 #  Revision 1.1  2011/03/16 16:31:46  martin
 #
 #############################################################################
@@ -67,7 +68,7 @@ while [ $# -gt 0 ]; do
     set ylabel 'time offs [ms]'; \
     set yrange $time_offs; \
     set format y \"%.3f\"; \
-    set xzeroaxis lt -1; \
+    set xzeroaxis linetype -1; \
     plot \"$1\" using $date_time_col:$time_offs_vals with lines; \
     " |gnuplot -persist
 
