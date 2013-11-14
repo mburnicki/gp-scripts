@@ -2,7 +2,7 @@
 
 #############################################################################
 #
-#  $Id: gp-log-offs 1.1 2013/11/14 11:40:35 martin TRASH $
+#  $Id: gp-log-offs 1.2 2013/11/14 16:12:26 martin TRASH $
 #
 #  Description:
 #    Plot logfiles created by the Meinberg Time Adjustment Service
@@ -12,27 +12,35 @@
 #
 # ---------------------------------------------------------------------------
 #  $Log: gp-log-offs $
+#  Revision 1.2  2013/11/14 16:12:26  martin
+#  Use common include file gp_common.
 #  Revision 1.1  2013/11/14 11:40:35  martin
 #
 #############################################################################
 
-while [ $# -gt 0 ]; do
-  . gp-log-common
+. gp-common $@
 
-  #my_xrange="[28330:28430]"
-  #delta_t_range="[-40000:-5000]"
+
+while [ $# -gt 0 ]; do
+
+  init_mbgadjtm_graph $1
 
   cd $basedir && echo "\
     $term_opts \
     $frame_opts \
     set multiplot; \
     set size 1.0, 1.0; \
-    set xrange $my_xrange; \
+    set xrange $x; \
+
+    set xlabel \"$this_xlabel\"; \
+    set format x \"$this_format_x\"; \
     \
     set origin 0.0, 0.0; \
-    set yrange $delta_t_range; \
-    set ylabel 'delta t [ms]'; \
-    plot \"$1\" using 0:(\$3/1e4) with lines; \
+    set xzeroaxis linetype -1; \
+    set ylabel \"$delta_t_label\"; \
+    set format y \"$delta_t_format\"; \
+    set yrange $delta_t; \
+    plot \"$1\" using $delta_t_vals with lines; \
     \
     " |gnuplot -persist
 

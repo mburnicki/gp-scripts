@@ -2,7 +2,7 @@
 
 #############################################################################
 #
-#  $Id: gp-log-offs-2 1.1 2013/11/14 11:40:35 martin TRASH $
+#  $Id: gp-log-offs-2 1.2 2013/11/14 16:12:26 martin TRASH $
 #
 #  Description:
 #    Plot logfiles created by the Meinberg Time Adjustment Service
@@ -12,37 +12,46 @@
 #
 # ---------------------------------------------------------------------------
 #  $Log: gp-log-offs-2 $
+#  Revision 1.2  2013/11/14 16:12:26  martin
+#  Use common include file gp_common.
 #  Revision 1.1  2013/11/14 11:40:35  martin
 #
 #############################################################################
 
+. gp-common
+
 while [ $# -gt 0 ]; do
-  . gp-log-common
+
+  init_mbgadjtm_graph $1
 
   cd $basedir && echo "\
     $term_opts \
     $frame_opts \
     set multiplot; \
     set size 1.0, 0.5; \
-    set xrange $my_xrange; \
+    set xrange $x; \
+    \
+    set notitle; \
+    set xlabel \"$this_xlabel\"; \
+    set format x \"$this_format_x\"; \
     \
     set origin 0.0, 0.0; \
-    set xlabel 'time [s]'; \
-    set format x \"%.0f\"; \
-    set ylabel 'tick val'; \
-    set yrange $tick_val_range; \
-    set format y \"%.0f\"; \
-    plot \"$1\" using $tick_val with lines; \
+    set ylabel \"$tick_label\"; \
+    set format y \"$tick_format\"; \
+    set yrange $tick; \
+    plot \"$1\" using $tick_vals with lines; \
     \
-    set title \"File: $1\"; \
-    set origin 0.0, 0.5; \
     set noxlabel; \
     set format x \"\"; \
-    set ylabel 'delta t [ms]'; \
-    set yrange $delta_t_range; \
-    set format y \"%.3f\"; \
-    set xzeroaxis lt -1; \
-    plot \"$1\" using $delta_t with lines; \
+    \
+    set title \"$this_title\"; \
+    \
+    set origin 0.0, 0.5; \
+    set xzeroaxis linetype -1; \
+    set ylabel \"$delta_t_label\"; \
+    set format y \"$delta_t_format\"; \
+    set yrange $delta_t; \
+    plot \"$1\" using $delta_t_vals with lines; \
     \
     " |gnuplot -persist
 
