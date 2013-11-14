@@ -1,0 +1,41 @@
+#!/bin/sh
+
+#############################################################################
+#
+#  $Id: gp-log-offs 1.1 2013/11/14 11:40:35 martin TRASH $
+#
+#  Description:
+#    Plot logfiles created by the Meinberg Time Adjustment Service
+#    using gnuplot.
+#
+#    (c) Martin Burnicki <martin.burnicki@meinberg.de>
+#
+# ---------------------------------------------------------------------------
+#  $Log: gp-log-offs $
+#  Revision 1.1  2013/11/14 11:40:35  martin
+#
+#############################################################################
+
+while [ $# -gt 0 ]; do
+  . gp-log-common
+
+  #my_xrange="[28330:28430]"
+  #delta_t_range="[-40000:-5000]"
+
+  cd $basedir && echo "\
+    $term_opts \
+    $frame_opts \
+    set multiplot; \
+    set size 1.0, 1.0; \
+    set xrange $my_xrange; \
+    \
+    set origin 0.0, 0.0; \
+    set yrange $delta_t_range; \
+    set ylabel 'delta t [ms]'; \
+    plot \"$1\" using 0:(\$3/1e4) with lines; \
+    \
+    " |gnuplot -persist
+
+    shift;
+done
+

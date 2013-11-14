@@ -1,0 +1,59 @@
+#!/bin/sh
+
+#############################################################################
+#
+#  $Id: gp-log-offs-3 1.1 2013/11/14 11:40:35 martin TRASH $
+#
+#  Description:
+#    Plot logfiles created by the Meinberg Time Adjustment Service
+#    using gnuplot.
+#
+#    (c) Martin Burnicki <martin.burnicki@meinberg.de>
+#
+# ---------------------------------------------------------------------------
+#  $Log: gp-log-offs-3 $
+#  Revision 1.1  2013/11/14 11:40:35  martin
+#
+#############################################################################
+
+while [ $# -gt 0 ]; do
+  . gp-log-common
+
+  cd $basedir && echo "\
+    $term_opts \
+    $frame_opts \
+    set multiplot; \
+    set size 1.0, 0.33333; \
+    set xrange $my_xrange; \
+    \
+    set origin 0.0, 0.0; \
+    set xlabel 'time [s]'; \
+    set format x \"%.0f\"; \
+    set ylabel 'tick val'; \
+    set yrange $tick_val_range; \
+    set format y \"%.0f\"; \
+    plot \"$1\" using $tick_val with lines; \
+    \
+    set origin 0.0, 0.33333; \
+    set yrange $delta_t_range; \
+    set noxlabel; \
+    set format x \"\"; \
+    set ylabel 'delta t [ms]'; \
+    set format y \"%.3f\"; \
+    set xzeroaxis lt -1; \
+    plot \"$1\" using $delta_t with lines; \
+    \
+    set title \"File: $1\"; \
+    set origin 0.0, 0.66666; \
+    set yrange $acc_time_range; \
+    set noxlabel; \
+    set format x \"\"; \
+    set ylabel 'access time [us]'; \
+    set format y \"%.0f\"; \
+    plot \"$1\" using $acc_time with lines; \
+    \
+    "|gnuplot -persist
+
+    shift;
+done
+

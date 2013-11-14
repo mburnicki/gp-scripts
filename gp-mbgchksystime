@@ -1,0 +1,77 @@
+#!/bin/sh
+
+#############################################################################
+#
+#  $Id: gp-mbgchksystime 1.1 2013/11/14 11:40:36 martin TRASH $
+#
+#  Description:
+#    Plot time offsets reported by mbgsvcd and mbgchksystime.
+#
+#    (c) Martin Burnicki <martin.burnicki@meinberg.de>
+#
+#  Some parameters can be overridden on the command line, e.g.:
+#
+#    x=[0:100]                  limit x range (time) from 0 to 100
+#    time_offs=[-0.003:0.003]   limit time offset range from -3 to 3
+#
+# ---------------------------------------------------------------------------
+#  $Log: gp-mbgchksystime $
+#  Revision 1.1  2013/11/14 11:40:36  martin
+#
+#############################################################################
+
+. gp-common $@
+
+init_graph()
+{
+#  set_mjd_tod $1;
+  set_term_opts $1;
+
+#  mjd_col='1';
+#  tod_col='2';
+#  x_vals="((\$$tod_col-$this_tod)+(\$$mjd_col-$this_mjd)*86400)";
+
+  x_val_col='3'
+  x_vals="(\$$x_val_col)"
+  x_vals_cmd="$x_vals:"
+
+  time_offs_col='5'
+  time_offs_vals="(\$$time_offs_col*1000)"
+  # time_offs_vals="(\$$time_offs_col)"
+
+  if test -z "$x"; then
+    x=$auto_range;
+  fi;
+
+  if test -z "$time_offs"; then
+    time_offs=$auto_range;
+  fi;
+}
+
+#    set decimalsign locale ""; \
+
+#    set xrange $x; \
+
+while [ $# -gt 0 ]; do
+
+  init_graph $1
+
+  cd $basedir && echo "\
+    $term_opts \
+    $frame_opts \
+    set multiplot; \
+    set size 1.0, 1.0; \
+    \
+    set origin 0.0, 0.0; \
+    \
+    set title \"File: $1\"; \
+    \
+    set ylabel 'time offs [ms]'; \
+    set yrange $time_offs; \
+    set format y \"%.3f\"; \
+    set xzeroaxis lt -1; \
+    plot \"$1\" using $x_vals_cmd$time_offs_vals with lines; \
+    " |gnuplot -persist
+
+    shift;
+done
