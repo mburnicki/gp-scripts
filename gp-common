@@ -1,7 +1,7 @@
 
 #############################################################################
 #
-#  $Id: gp-common 1.5 2013/11/14 17:02:09 martin TRASH $
+#  $Id: gp-common 1.6 2013/12/04 14:02:05 martin TRASH $
 #
 #  Description:
 #    Include file for the gp-* scripts which create graphs
@@ -11,6 +11,8 @@
 #
 # ---------------------------------------------------------------------------
 #  $Log: gp-common $
+#  Revision 1.6  2013/12/04 14:02:05  martin
+#  Fixed variable names used for NTP peerstats.
 #  Revision 1.5  2013/11/14 17:02:09  martin
 #  Moved init function for NTP plots here.
 #  Revision 1.4  2013/11/14 16:38:19  martin
@@ -212,13 +214,13 @@ init_ntp_graph()
   fi;
 
 
-  roundtrip_col='6';
-  roundtrip_vals="(\$$roundtrip_col)";
-  roundtrip_label='round trip [ms]'
-  roundtrip_format='%.3f'
+  round_trip_col='6';
+  round_trip_vals="(\$$round_trip_col)";
+  round_trip_label='round trip [ms]'
+  round_trip_format='%.3f'
 
-  if test -z "$roundtrip"; then
-    roundtrip=$auto_range;
+  if test -z "$round_trip"; then
+    round_trip=$auto_range;
   fi;
 
 
