@@ -1,7 +1,7 @@
 
 #############################################################################
 #
-#  $Id: gp-common 1.6 2013/12/04 14:02:05 martin TRASH $
+#  $Id: gp-common 1.7 2013/12/05 08:50:00 andreja TRASH $
 #
 #  Description:
 #    Include file for the gp-* scripts which create graphs
@@ -11,6 +11,8 @@
 #
 # ---------------------------------------------------------------------------
 #  $Log: gp-common $
+#  Revision 1.7  2013/12/05 08:50:00  andreja
+#  Support overriding xlabel.
 #  Revision 1.6  2013/12/04 14:02:05  martin
 #  Fixed variable names used for NTP peerstats.
 #  Revision 1.5  2013/11/14 17:02:09  martin
@@ -66,6 +68,26 @@ set_this_title()
     this_title="File: $1"
   else
     this_title="$title"
+  fi
+}
+
+
+set_this_xlabel_ntp()
+{
+  if test -z "$xlabel"; then
+    this_xlabel="t - MJD $this_mjd TOD $this_tod [s]"
+  else
+    this_xlabel="$xlabel"
+  fi
+}
+
+
+set_this_xlabel_mbgadjtm()
+{
+  if test -z "$xlabel"; then
+    this_xlabel='time [s]'
+  else
+    this_xlabel="$xlabel"
   fi
 }
 
@@ -166,7 +188,7 @@ init_mbgadjtm_graph()
     acc_time=$auto_range
   fi
 
-  this_xlabel='time [s]'
+  set_this_xlabel_mbgadjtm
   this_format_x="%.0f"
 }
 
@@ -224,7 +246,7 @@ init_ntp_graph()
   fi;
 
 
-  this_xlabel="t - MJD $this_mjd TOD $this_tod [s]"
+  set_this_xlabel_ntp
   this_format_x="%.0f"
 }
 
