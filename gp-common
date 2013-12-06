@@ -1,7 +1,7 @@
 
 #############################################################################
 #
-#  $Id: gp-common 1.7 2013/12/05 08:50:00 andreja TRASH $
+#  $Id: gp-common 1.8 2013/12/06 09:33:10 martin TRASH $
 #
 #  Description:
 #    Include file for the gp-* scripts which create graphs
@@ -11,6 +11,8 @@
 #
 # ---------------------------------------------------------------------------
 #  $Log: gp-common $
+#  Revision 1.8  2013/12/06 09:33:10  martin
+#  Support loopstats poll interval.
 #  Revision 1.7  2013/12/05 08:50:00  andreja
 #  Support overriding xlabel.
 #  Revision 1.6  2013/12/04 14:02:05  martin
@@ -243,6 +245,16 @@ init_ntp_graph()
 
   if test -z "$round_trip"; then
     round_trip=$auto_range;
+  fi;
+
+
+  poll_col='7'
+  poll_vals="(\$$poll_col)";
+  poll_label='poll'
+  poll_format='%.0f'
+
+  if test -z "$poll"; then
+    poll=[2:11]
   fi;
 
 
