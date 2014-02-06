@@ -2,7 +2,7 @@
 
 #############################################################################
 #
-#  $Id: gp-mrs-stats 1.1.1.1 2013/11/14 17:03:28 martin TRASH $
+#  $Id: gp-mrs-stats 1.2 2014/02/06 14:41:01 martin TRASH $
 #
 #  Description:
 #    Plot MRS statistic files using gnuplot.
@@ -25,229 +25,60 @@
 #
 # ---------------------------------------------------------------------------
 #  $Log: gp-mrs-stats $
-#  Revision 1.1.1.1  2013/11/14 17:03:28  martin
+#  Revision 1.2  2014/02/06 14:41:01  martin
+#  Moved some stuff to gp-common.
+#  Use common syntax.
 #  Revision 1.1  2010/03/24 14:21:39  martin
 #  Initial revision.
 #
 #############################################################################
 
-if test -z "$lmargin"; then
-  lmargin=17;
-fi;
+# uncomment to override defaults
+#if test -z "$lmargin"; then
+#  lmargin=17;
+#fi;
 
 . gp-common $@
 
-# data:
-gps_col='3'
-gps_label='GPS offs [us]'
-
-pps_col='4'
-pps_label='PPS offs [us]'
-
-irig_col='5'
-irig_label='IRIG offs [us]'
-
-ntp_col='6'
-ntp_label='NTP offs [us]'
-
-ptp_col='7'
-ptp_label='PTP offs [us]'
-
-frq_col='8'
-frq_label='FRQ offs [us]'
-
-
-# usage: select_t1( 't1', src )
-select_t1()
-{
-# assume $1 is 't1'
-  case "$2" in
-    'gps')
-      t1_label="$gps_label";
-      t1_col="$gps_col";
-    ;;
-
-    'pps')
-      t1_label="$pps_label";
-      t1_col="$pps_col";
-    ;;
-
-    'irig')
-      t1_label="$irig_label";
-      t1_col="$irig_col";
-    ;;
-
-    'ntp')
-      t1_label=$ntp_label;
-      t1_col=$ntp_col;
-    ;;
-
-    'ptp')
-      t1_label="$ptp_label";
-      t1_col="$ptp_col";
-    ;;
-
-    'frq')
-      t1_label="$frq_label";
-      t1_col="$frq_col";
-    ;;
-
-    *)
-      echo "Select time t1: invalid $2";
-    ;;
-  esac;
-
-  if test -z "$t1_offs"; then
-    t1_offs=${time_offs-$auto_range};
-  fi;
-
-  if test -z "$t1_bias"; then
-    t1_bias='0';
-  fi;
-
-  t1_vals="(\$$t1_col*1e6-$t1_bias)"
-}
-
-
-# usage: select_t2( 't2', src )
-select_t2()
-{
-# assume $1 is 't2'
-  case "$2" in
-    'gps')
-      t2_label="$gps_label";
-      t2_col="$gps_col";
-    ;;
-
-    'pps')
-      t2_label="$pps_label";
-      t2_col="$pps_col";
-    ;;
-
-    'irig')
-      t2_label="$irig_label";
-      t2_col="$irig_col";
-    ;;
-
-    'ntp')
-      t2_label="$ntp_label";
-      t2_col="$ntp_col";
-    ;;
-
-    'ptp')
-      t2_label="$ptp_label";
-      t2_col="$ptp_col";
-    ;;
-
-    'frq')
-      t2_label="$frq_label";
-      t2_col="$frq_col";
-    ;;
-
-    *)
-      echo "Select time t1: invalid $2";
-    ;;
-  esac;
-
-  if test -z "$t2_offs"; then
-    t2_offs=${time_offs-$auto_range};
-  fi;
-
-  if test -z "$t2_bias"; then
-    t2_bias='0';
-  fi;
-
-  t2_vals="(\$$t2_col*1e6-$t2_bias)";
-}
-
-
-# usage: select_time( t1, gps )
-select_time()
-{
-  case "$1" in
-    't1')
-      select_t1 $1 $2;
-    ;;
-
-    't2')
-      select_t2 $1 $2;
-    ;;
-
-    *)
-      echo "Select time: invalid parameter 1: $1";
-      exit 1;
-    ;;
-  esac
-
-#  case "$2" in
-#    'gps')
-#      term_opts="set terminal postscript enhanced color";
-#      ${1}_label="$gps_label";
-#      ${1}_col="$gps_col";
-#      echo "Select time $1: $2 -> t1_col = $t1_col = $gps_col";
-#    ;;
-#
-#    *)
-#      echo "Select time $1: $2";
-#    ;;
-#  esac;
-
-}
-
-
-
-init_graph()
-{
-  set_mjd_tod $1;
-  set_term_opts $1;
-
-  mjd_col='1';
-  tod_col='2';
-  x_vals="((\$$tod_col-$this_tod)+(\$$mjd_col-$this_mjd)*86400)";
-
-  if test -z "$x"; then
-    x=$auto_range;
-  fi;
-
-  select_time 't1' ${t1-'gps'}
-  select_time 't2' ${t2-'ntp'}
-}
-
-
-
 while [ $# -gt 0 ]; do
 
-  init_graph $1
+  init_graph_mrs $1
 
-  echo "creating graph"
-
-  cd $basedir && echo "\
+  cmd="\
     $term_opts \
     $frame_opts \
     set multiplot; \
     set size 1.0, 0.5; \
     set xrange $x; \
     \
-    set notitle; \
+    unset title; \
+    set xlabel \"$this_xlabel\"; \
+    set format x \"$this_format_x\"; \
+    \
     set origin 0.0, 0.0; \
-    set xlabel 't - MJD $this_mjd TOD $this_tod [s]'; \
-    set format x \"%.0f\"; \
-    set ylabel \"$t2_label\"; \
-    set yrange $t2_offs; \
-    set format y \"%.3f\"; \
-    plot \"$1\" using $x_vals:$t2_vals with lines; \
-    \
-    set title \"File: $1\"; \
-    set origin 0.0, 0.5; \
-    \
-    set noxlabel; \
-    set format x \"\"; \
-    set ylabel \"$t1_label\"; \
-    set yrange $t1_offs; \
-    set format y \"%.3f\"; \
     set xzeroaxis linetype -1; \
-    plot \"$1\" using $x_vals:$t1_vals with lines; \
-    " |gnuplot -persist
+    set ylabel \"$t2_label\"; \
+    set format y \"$t2_format_y\"; \
+    set yrange $t2_offs; \
+    plot \"$1\" using $x_vals:$t2_vals with lines linestyle 1; \
+    $hor_line_t2 \
+    \
+    unset xlabel; \
+    set format x \"\"; \
+    \
+    set title \"$this_title\"; \
+    \
+    set origin 0.0, 0.5; \
+    set xzeroaxis linetype -1; \
+    set ylabel \"$t1_label\"; \
+    set format y \"$t1_format_y\"; \
+    set yrange $t1_offs; \
+    plot \"$1\" using $x_vals:$t1_vals with lines linestyle 1; \
+    $hor_line_t1 \
+    "
+    echo ${cmd}
+
+    cd $basedir && echo ${cmd} | gnuplot -persist
 
     shift;
 done

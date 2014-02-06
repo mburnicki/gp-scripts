@@ -2,7 +2,7 @@
 
 #############################################################################
 #
-#  $Id: gp-ntp-peerstats 1.3 2013/11/14 17:01:02 martin TRASH $
+#  $Id: gp-ntp-peerstats 1.4 2014/02/06 14:09:49 martin TRASH $
 #
 #  Description:
 #    Plot NTP peerstats files using gnuplot.
@@ -28,6 +28,8 @@
 #
 # ---------------------------------------------------------------------------
 #  $Log: gp-ntp-peerstats $
+#  Revision 1.4  2014/02/06 14:09:49  martin
+#  Account for renamed function.
 #  Revision 1.3  2013/11/14 17:01:02  martin
 #  Use common init function.
 #  Unified syntax and usage of variables.
@@ -41,7 +43,7 @@
 
 while [ $# -gt 0 ]; do
 
-  init_ntp_graph $1
+  init_graph_ntp $1
 
   cd $basedir && echo "\
     $term_opts \

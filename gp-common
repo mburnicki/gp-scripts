@@ -1,7 +1,7 @@
 
 #############################################################################
 #
-#  $Id: gp-common 1.8 2013/12/06 09:33:10 martin TRASH $
+#  $Id: gp-common 1.9 2014/02/06 14:08:33 martin TRASH $
 #
 #  Description:
 #    Include file for the gp-* scripts which create graphs
@@ -11,6 +11,10 @@
 #
 # ---------------------------------------------------------------------------
 #  $Log: gp-common $
+#  Revision 1.9  2014/02/06 14:08:33  martin
+#  Support overriding name of output file.
+#  Changed some names.
+#  Moved MRS stuff here.
 #  Revision 1.8  2013/12/06 09:33:10  martin
 #  Support loopstats poll interval.
 #  Revision 1.7  2013/12/05 08:50:00  andreja
@@ -60,7 +64,7 @@ if test -z "$delta_t_offs"; then
 fi
 
 if test -z "$frame_opts"; then
-  frame_opts="set grid; set nokey; set lmargin $lmargin; set rmargin $rmargin;"
+  frame_opts="set grid; unset key; set lmargin $lmargin; set rmargin $rmargin;"
 fi
 
 
@@ -74,7 +78,7 @@ set_this_title()
 }
 
 
-set_this_xlabel_ntp()
+set_this_xlabel_mjd_tod()
 {
   if test -z "$xlabel"; then
     this_xlabel="t - MJD $this_mjd TOD $this_tod [s]"
@@ -96,35 +100,57 @@ set_this_xlabel_mbgadjtm()
 
 set_term_opts()
 {
+  if test -z "$output"; then
+    this_output=$1
+  else
+    this_output=$output
+  fi
+
   case "$term" in
     'ps')
-      term_opts="set terminal postscript enhanced color; set output \"$1.ps\";";
-      echo "Output goes to: $1.ps";
+      term_opts="set terminal postscript enhanced color; set output \"$this_output.ps\";";
+      echo "Output goes to: $this_output.ps";
     ;;
 
     'eps')
-      term_opts="set terminal postscript eps enhanced color; set output \"$1.eps\";";
-      echo "Output goes to: $1.eps";
+      term_opts="set terminal postscript eps enhanced color; set output \"$this_output.eps\";";
+      echo "Output goes to: $this_output.eps";
     ;;
 
     'pbm')
-      term_opts="set terminal pbm small color; set output \"$1.pbm\";";
-      echo "Output goes to: $1.pbm";
+      term_opts="set terminal pbm small color; set output \"$this_output.pbm\";";
+      echo "Output goes to: $this_output.pbm";
     ;;
 
     *)
-      term_opts=;
+      term_opts="set output;";
     ;;
   esac;
+
+  term_opts+="set style line 1 lt 1 lc rgb \"red\" lw 1;"
+  term_opts+="set style line 2 lt 1 lc rgb \"blue\" lw 1;"
 }
 
 
 set_mjd_tod()
 {
-  ## read MJD and start time of day from the loopstats file
-  IFS=' .' read mjd_from_file tod_from_file dummy < $1;
+  # Read MJD and start time of day from the first line
+  # of the data file which is not marked as comment.
 
-  ## unless this has been overridden on the
+  comment_pattern='^#.*$'
+  i=0
+
+  while IFS=' .' read -r mjd_from_file tod_from_file dummy; do
+    if ! [[ ${mjd_from_file} =~ $comment_pattern ]]; then
+    #  echo "DBG: line $i: break on ${mjd_from_file} ${tod_from_file}"
+      break
+    #else
+    #  echo "DBG: line $i: skipping ${mjd_from_file} ${tod_from_file}"
+    fi
+    let i+=1
+  done < "$1"
+
+  # unless this has been overridden on the command line
   if test -z "$mjd"; then
     this_mjd=$mjd_from_file;
     echo "MJD $this_mjd set from file";
@@ -195,7 +221,7 @@ init_mbgadjtm_graph()
 }
 
 
-init_ntp_graph()
+init_graph_ntp()
 {
   set_mjd_tod $1
   set_term_opts $1
@@ -258,7 +284,205 @@ init_ntp_graph()
   fi;
 
 
-  set_this_xlabel_ntp
+  set_this_xlabel_mjd_tod
   this_format_x="%.0f"
 }
+
+
+# MRS stuff
+
+# data:
+gps_col='3'
+gps_label='GPS offs [us]'
+
+pps_col='4'
+pps_label='PPS offs [us]'
+
+irig_col='5'
+irig_label='IRIG offs [us]'
+
+ntp_col='6'
+ntp_label='NTP offs [us]'
+
+ptp_col='7'
+ptp_label='PTP offs [us]'
+
+frq_col='8'
+frq_label='FRQ offs [us]'
+
+
+# usage: select_t1( 't1', src )
+select_t1()
+{
+# assume $1 is 't1'
+  case "$2" in
+    'gps')
+      t1_label="$gps_label";
+      t1_col="$gps_col";
+    ;;
+
+    'pps')
+      t1_label="$pps_label";
+      t1_col="$pps_col";
+    ;;
+
+    'irig')
+      t1_label="$irig_label";
+      t1_col="$irig_col";
+    ;;
+
+    'ntp')
+      t1_label=$ntp_label;
+      t1_col=$ntp_col;
+    ;;
+
+    'ptp')
+      t1_label="$ptp_label";
+      t1_col="$ptp_col";
+    ;;
+
+    'frq')
+      t1_label="$frq_label";
+      t1_col="$frq_col";
+    ;;
+
+    *)
+      echo "Select time t1: invalid $2";
+    ;;
+  esac;
+
+  if test -z "$t1_offs"; then
+    t1_offs=${time_offs-$auto_range};
+  fi;
+
+  if test -z "$t1_bias"; then
+    t1_bias='0';
+  fi;
+
+  t1_vals="(\$$t1_col*1e6-$t1_bias)"
+}
+
+
+# usage: select_t2( 't2', src )
+select_t2()
+{
+# assume $1 is 't2'
+  case "$2" in
+    'gps')
+      t2_label="$gps_label";
+      t2_col="$gps_col";
+    ;;
+
+    'pps')
+      t2_label="$pps_label";
+      t2_col="$pps_col";
+    ;;
+
+    'irig')
+      t2_label="$irig_label";
+      t2_col="$irig_col";
+    ;;
+
+    'ntp')
+      t2_label="$ntp_label";
+      t2_col="$ntp_col";
+    ;;
+
+    'ptp')
+      t2_label="$ptp_label";
+      t2_col="$ptp_col";
+    ;;
+
+    'frq')
+      t2_label="$frq_label";
+      t2_col="$frq_col";
+    ;;
+
+    *)
+      echo "Select time t1: invalid $2";
+    ;;
+  esac;
+
+  if test -z "$t2_offs"; then
+    t2_offs=${time_offs-$auto_range};
+  fi;
+
+  if test -z "$t2_bias"; then
+    t2_bias='0';
+  fi;
+
+  t2_vals="(\$$t2_col*1e6-$t2_bias)";
+}
+
+
+# usage: select_time( t1, gps )
+select_time()
+{
+  case "$1" in
+    't1')
+      select_t1 $1 $2;
+    ;;
+
+    't2')
+      select_t2 $1 $2;
+    ;;
+
+    *)
+      echo "Select time: invalid parameter 1: $1";
+      exit 1;
+    ;;
+  esac
+
+#  case "$2" in
+#    'gps')
+#      term_opts="set terminal postscript enhanced color";
+#      ${1}_label="$gps_label";
+#      ${1}_col="$gps_col";
+#      echo "Select time $1: $2 -> t1_col = $t1_col = $gps_col";
+#    ;;
+#
+#    *)
+#      echo "Select time $1: $2";
+#    ;;
+#  esac;
+
+}
+
+
+init_graph_mrs()
+{
+  set_mjd_tod $1;
+  set_term_opts $1;
+  set_this_title $1
+
+  mjd_col='1';
+  tod_col='2';
+  x_vals="((\$$tod_col-$this_tod)+(\$$mjd_col-$this_mjd)*86400)";
+
+  if test -z "$x"; then
+    x=$auto_range;
+  fi;
+
+  select_time 't1' ${t1-'gps'}
+  select_time 't2' ${t2-'ntp'}
+
+  this_xlabel="t - MJD $this_mjd TOD $this_tod [s]"
+  this_format_x='%.0f'
+  # t1_format_y='%.3f'
+  # t2_format_y='%.3f'
+  t1_format_y='%.0f'
+  t2_format_y='%.0f'
+
+
+  if [[ ${t1_mean} != "" ]]; then
+    hor_line_t1="f(x)=${t1_mean}; replot f(x) with lines linestyle 2;"
+  fi
+
+  if [[ ${t2_mean} != "" ]]; then
+    hor_line_t2="f(x)=${t2_mean}; replot f(x) with lines linestyle 2;"
+  fi
+
+  set_this_xlabel_mjd_tod
+}
+
 

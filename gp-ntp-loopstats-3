@@ -2,7 +2,7 @@
 
 #############################################################################
 #
-#  $Id: gp-ntp-loopstats-3 1.1 2013/12/06 10:21:37 martin TRASH $
+#  $Id: gp-ntp-loopstats-3 1.2 2014/02/06 14:09:49 martin TRASH $
 #
 #  Description:
 #    Call gnuplot to plot NTP loopstats files, including poll interval.
@@ -20,6 +20,8 @@
 #
 # ---------------------------------------------------------------------------
 #  $Log: gp-ntp-loopstats-3 $
+#  Revision 1.2  2014/02/06 14:09:49  martin
+#  Account for renamed function.
 #  Revision 1.1  2013/12/06 10:21:37  martin
 #  Initial revision.
 #
@@ -29,7 +31,7 @@
 
 while [ $# -gt 0 ]; do
 
-  init_ntp_graph $1
+  init_graph_ntp $1
 
   cd $basedir && echo "\
     $term_opts \
