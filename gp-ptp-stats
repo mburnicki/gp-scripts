@@ -2,7 +2,7 @@
 
 #############################################################################
 #
-#  $Id: gp-ptp-stats 1.3 2014/02/06 14:11:57 martin TRASH $
+#  $Id: gp-ptp-stats 1.3.1.1 2014/02/06 16:38:56 martin TRASH $
 #
 #  Description:
 #    Plot PTP statistic files using gnuplot.
@@ -17,6 +17,8 @@
 #
 # ---------------------------------------------------------------------------
 #  $Log: gp-ptp-stats $
+#  Revision 1.3.1.1  2014/02/06 16:38:56  martin
+#  Started to use new syntax.
 #  Revision 1.3  2014/02/06 14:11:57  martin
 #  Replaced obsoleted gnuplot keywords.
 #  Revision 1.2  2010/03/24 12:07:49  martin
@@ -63,33 +65,34 @@ while [ $# -gt 0 ]; do
 
   init_graph $1
 
-  cd $basedir && echo "\
-    $term_opts \
-    $frame_opts \
-    set multiplot; \
-    set size 1.0, 0.5; \
-    set xrange $x; \
-    \
-    unset title; \
-    set origin 0.0, 0.0; \
-    set xlabel 't - MJD $this_mjd TOD $this_tod [s]'; \
-    set format x \"%.0f\"; \
-    set ylabel 'delay [us]'; \
-    set yrange $delay; \
-    set format y \"%.3f\"; \
-    plot \"$1\" using $x_vals:$delay_vals with lines; \
-    \
-    set title \"File: $1\"; \
-    set origin 0.0, 0.5; \
-    \
-    unset xlabel; \
-    set format x \"\"; \
-    set ylabel 'time offs [us]'; \
-    set yrange $time_offs; \
-    set format y \"%.3f\"; \
-    set xzeroaxis linetype -1; \
-    plot \"$1\" using $x_vals:$time_offs_vals with lines; \
-    " |gnuplot -persist
+  cd $basedir && gnuplot -persist << EOF
+    $term_opts
+    $frame_opts
+    set multiplot
+    set size 1.0, 0.5
+    set xrange $x
 
-    shift;
+    unset title
+    set origin 0.0, 0.0
+    set xlabel 't - MJD $this_mjd TOD $this_tod [s]'
+    set format x "%.0f"
+    set ylabel 'delay [us]'
+    set yrange $delay
+    set format y "%.3f"
+    plot "$1" using $x_vals:$delay_vals with lines
+
+    set title "File: $1"
+    set origin 0.0, 0.5
+
+    unset xlabel
+    set format x ""
+    set ylabel 'time offs [us]'
+    set yrange $time_offs
+    set format y "%.3f"
+    set xzeroaxis linetype -1
+    plot "$1" using $x_vals:$time_offs_vals with lines
+EOF
+# EOF above needs to be at the *beginning* of the line.
+
+  shift
 done

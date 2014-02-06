@@ -2,7 +2,7 @@
 
 #############################################################################
 #
-#  $Id: gp-mrs-stats 1.2 2014/02/06 14:41:01 martin TRASH $
+#  $Id: gp-mrs-stats 1.2.1.1 2014/02/06 16:38:28 martin TRASH $
 #
 #  Description:
 #    Plot MRS statistic files using gnuplot.
@@ -25,6 +25,8 @@
 #
 # ---------------------------------------------------------------------------
 #  $Log: gp-mrs-stats $
+#  Revision 1.2.1.1  2014/02/06 16:38:28  martin
+#  Started to use new syntax.
 #  Revision 1.2  2014/02/06 14:41:01  martin
 #  Moved some stuff to gp-common.
 #  Use common syntax.
@@ -44,41 +46,39 @@ while [ $# -gt 0 ]; do
 
   init_graph_mrs $1
 
-  cmd="\
-    $term_opts \
-    $frame_opts \
-    set multiplot; \
-    set size 1.0, 0.5; \
-    set xrange $x; \
-    \
-    unset title; \
-    set xlabel \"$this_xlabel\"; \
-    set format x \"$this_format_x\"; \
-    \
-    set origin 0.0, 0.0; \
-    set xzeroaxis linetype -1; \
-    set ylabel \"$t2_label\"; \
-    set format y \"$t2_format_y\"; \
-    set yrange $t2_offs; \
-    plot \"$1\" using $x_vals:$t2_vals with lines linestyle 1; \
-    $hor_line_t2 \
-    \
-    unset xlabel; \
-    set format x \"\"; \
-    \
-    set title \"$this_title\"; \
-    \
-    set origin 0.0, 0.5; \
-    set xzeroaxis linetype -1; \
-    set ylabel \"$t1_label\"; \
-    set format y \"$t1_format_y\"; \
-    set yrange $t1_offs; \
-    plot \"$1\" using $x_vals:$t1_vals with lines linestyle 1; \
-    $hor_line_t1 \
-    "
-    echo ${cmd}
+  cd $basedir && gnuplot -persist << EOF
+    $term_opts
+    $frame_opts
+    set multiplot
+    set size 1.0, 0.5
+    set xrange $x
 
-    cd $basedir && echo ${cmd} | gnuplot -persist
+    unset title
+    set xlabel "$this_xlabel"
+    set format x "$this_format_x"
 
-    shift;
+    set origin 0.0, 0.0
+    set xzeroaxis linetype -1
+    set ylabel "$t2_label"
+    set format y "$t2_format_y"
+    set yrange $t2_offs
+    plot "$1" using $x_vals:$t2_vals with lines linestyle 1
+    $hor_line_t2
+
+    unset xlabel
+    set format x ""
+
+    set title "$this_title"
+
+    set origin 0.0, 0.5
+    set xzeroaxis linetype -1
+    set ylabel "$t1_label"
+    set format y "$t1_format_y"
+    set yrange $t1_offs
+    plot "$1" using $x_vals:$t1_vals with lines linestyle 1
+    $hor_line_t1
+EOF
+# EOF above needs to be at the *beginning* of the line.
+
+  shift
 done

@@ -2,7 +2,7 @@
 
 #############################################################################
 #
-#  $Id: gp-ntp-loopstats-3 1.2 2014/02/06 14:09:49 martin TRASH $
+#  $Id: gp-ntp-loopstats-3 1.2.1.1 2014/02/06 16:38:40 martin TRASH $
 #
 #  Description:
 #    Call gnuplot to plot NTP loopstats files, including poll interval.
@@ -20,6 +20,8 @@
 #
 # ---------------------------------------------------------------------------
 #  $Log: gp-ntp-loopstats-3 $
+#  Revision 1.2.1.1  2014/02/06 16:38:40  martin
+#  Started to use new syntax.
 #  Revision 1.2  2014/02/06 14:09:49  martin
 #  Account for renamed function.
 #  Revision 1.1  2013/12/06 10:21:37  martin
@@ -33,41 +35,41 @@ while [ $# -gt 0 ]; do
 
   init_graph_ntp $1
 
-  cd $basedir && echo "\
-    $term_opts \
-    $frame_opts \
-    set multiplot; \
-    set size 1.0, 0.333333; \
-    set xrange $x; \
-    \
-    set notitle; \
-    set xlabel \"$this_xlabel\"; \
-    set format x \"$this_format_x\"; \
-    \
-    set ylabel \"$poll_label\"; \
-    set format y \"$poll_format\"; \
-    set yrange $poll; \
-    plot \"$1\" using $x_vals:$poll_vals with lines; \
-    \
-    set noxlabel; \
-    set format x \"\"; \
-    \
-    set origin 0.0, 0.33333; \
-    set ylabel \"$freq_offs_label\"; \
-    set format y \"$freq_offs_format\"; \
-    set yrange $freq_offs; \
-    plot \"$1\" using $x_vals:$freq_offs_vals with lines; \
-    \
-    set title \"$this_title\"; \
-    \
-    set origin 0.0, 0.66666; \
-    set xzeroaxis linetype -1; \
-    set ylabel \"$time_offs_label\"; \
-    set format y \"$time_offs_format\"; \
-    set yrange $time_offs; \
-    plot \"$1\" using $x_vals:$loop_time_offs_vals with lines; \
-    \
-    " |gnuplot -persist
+  cd $basedir && gnuplot -persist << EOF
+    $term_opts
+    $frame_opts
+    set multiplot
+    set size 1.0, 0.333333
+    set xrange $x
 
-    shift;
+    set notitle
+    set xlabel "$this_xlabel"
+    set format x "$this_format_x"
+
+    set ylabel "$poll_label"
+    set format y "$poll_format"
+    set yrange $poll
+    plot "$1" using $x_vals:$poll_vals with lines
+
+    set noxlabel
+    set format x ""
+
+    set origin 0.0, 0.33333
+    set ylabel "$freq_offs_label"
+    set format y "$freq_offs_format"
+    set yrange $freq_offs
+    plot "$1" using $x_vals:$freq_offs_vals with lines
+
+    set title "$this_title"
+
+    set origin 0.0, 0.66666
+    set xzeroaxis linetype -1
+    set ylabel "$time_offs_label"
+    set format y "$time_offs_format"
+    set yrange $time_offs
+    plot "$1" using $x_vals:$loop_time_offs_vals with lines
+EOF
+# EOF above needs to be at the *beginning* of the line.
+
+  shift
 done

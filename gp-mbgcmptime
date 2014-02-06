@@ -2,7 +2,7 @@
 
 #############################################################################
 #
-#  $Id: gp-mbgcmptime 1.1.1.1 2013/11/14 17:02:53 martin TRASH $
+#  $Id: gp-mbgcmptime 1.1.1.2 2014/02/06 16:38:23 martin TRASH $
 #
 #  Description:
 #    Plot time offsets reported by  mbgsvcd.
@@ -18,6 +18,8 @@
 #
 # ---------------------------------------------------------------------------
 #  $Log: gp-mbgcmptime $
+#  Revision 1.1.1.2  2014/02/06 16:38:23  martin
+#  Started to use new syntax.
 #  Revision 1.1.1.1  2013/11/14 17:02:53  martin
 #  Revision 1.1  2013/11/14 11:40:36  martin
 #  Revision 1.1.1.1  2011/03/16 16:14:37  martin
@@ -56,23 +58,24 @@ while [ $# -gt 0 ]; do
 
   init_graph $1
 
-  cd $basedir && echo "\
-    $term_opts \
-    $frame_opts \
-    set multiplot; \
-    set size 1.0, 1.0; \
-    \
-    set origin 0.0, 0.0; \
-    \
-    set title \"File: $1\"; \
-    \
-    set ylabel 'time offs [ms]'; \
-    set yrange $time_offs; \
-    set format y \"%.3f\"; \
-    set xrange $x; \
-    set xzeroaxis linetype -1; \
-    plot \"$1\" using $time_offs_vals with lines; \
-    " |gnuplot -persist
+  cd $basedir && gnuplot -persist << EOF
+    $term_opts
+    $frame_opts
+    set multiplot
+    set size 1.0, 1.0
 
-    shift;
+    set origin 0.0, 0.0
+
+    set title "File: $1"
+
+    set ylabel 'time offs [ms]'
+    set yrange $time_offs
+    set format y "%.3f"
+    set xrange $x
+    set xzeroaxis linetype -1
+    plot "$1" using $time_offs_vals with lines
+EOF
+# EOF above needs to be at the *beginning* of the line.
+
+  shift
 done

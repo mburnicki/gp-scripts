@@ -2,7 +2,7 @@
 
 #############################################################################
 #
-#  $Id: gp-ntp-peerstats 1.4 2014/02/06 14:09:49 martin TRASH $
+#  $Id: gp-ntp-peerstats 1.4.1.1 2014/02/06 16:38:51 martin TRASH $
 #
 #  Description:
 #    Plot NTP peerstats files using gnuplot.
@@ -28,6 +28,8 @@
 #
 # ---------------------------------------------------------------------------
 #  $Log: gp-ntp-peerstats $
+#  Revision 1.4.1.1  2014/02/06 16:38:51  martin
+#  Started to use new syntax.
 #  Revision 1.4  2014/02/06 14:09:49  martin
 #  Account for renamed function.
 #  Revision 1.3  2013/11/14 17:01:02  martin
@@ -45,36 +47,36 @@ while [ $# -gt 0 ]; do
 
   init_graph_ntp $1
 
-  cd $basedir && echo "\
-    $term_opts \
-    $frame_opts \
-    set multiplot; \
-    set size 1.0, 0.5; \
-    set xrange $x; \
-    \
-    set notitle; \
-    set xlabel \"$this_xlabel\"; \
-    set format x \"$this_format_x\"; \
-    \
-    set origin 0.0, 0.0; \
-    set ylabel \"$round_trip_label\"; \
-    set format y \"$round_trip_format\"; \
-    set yrange $round_trip; \
-    plot \"$1\" using $x_vals:$round_trip_vals with lines; \
-    \
-    set noxlabel; \
-    set format x \"\"; \
-    \
-    set title \"$this_title\"; \
-    \
-    set origin 0.0, 0.5; \
-    set xzeroaxis linetype -1; \
-    set ylabel \"$time_offs_label\"; \
-    set format y \"$time_offs_format\"; \
-    set yrange $time_offs; \
-    plot \"$1\" using $x_vals:$peer_time_offs_vals with lines; \
-    \
-    " |gnuplot -persist
+  cd $basedir && gnuplot -persist << EOF
+    $term_opts
+    $frame_opts
+    set multiplot
+    set size 1.0, 0.5
+    set xrange $x
 
-    shift;
+    set notitle
+    set xlabel "$this_xlabel"
+    set format x "$this_format_x"
+
+    set origin 0.0, 0.0
+    set ylabel "$round_trip_label"
+    set format y "$round_trip_format"
+    set yrange $round_trip
+    plot "$1" using $x_vals:$round_trip_vals with lines
+
+    set noxlabel
+    set format x ""
+
+    set title "$this_title"
+
+    set origin 0.0, 0.5
+    set xzeroaxis linetype -1
+    set ylabel "$time_offs_label"
+    set format y "$time_offs_format"
+    set yrange $time_offs
+    plot "$1" using $x_vals:$peer_time_offs_vals with lines
+EOF
+# EOF above needs to be at the *beginning* of the line.
+
+  shift
 done
