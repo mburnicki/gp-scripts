@@ -2,7 +2,7 @@
 
 #############################################################################
 #
-#  $Id: gp-mrs-stats 1.2.1.1 2014/02/06 16:38:28 martin TRASH $
+#  $Id: gp-mrs-stats 1.2.1.2 2014/02/07 12:18:25 martin TRASH $
 #
 #  Description:
 #    Plot MRS statistic files using gnuplot.
@@ -25,6 +25,8 @@
 #
 # ---------------------------------------------------------------------------
 #  $Log: gp-mrs-stats $
+#  Revision 1.2.1.2  2014/02/07 12:18:25  martin
+#  Started new scripting.
 #  Revision 1.2.1.1  2014/02/06 16:38:28  martin
 #  Started to use new syntax.
 #  Revision 1.2  2014/02/06 14:41:01  martin
@@ -42,43 +44,115 @@
 
 . gp-common $@
 
+
+
+# init plot settings
+# $1: ypos, $2: xrange
+plot_init()
+{
+  cmd="$term_opts"
+  cmd+="$frame_opts"
+  cmd+="set multiplot;"
+  cmd+="set size 1.0, $1;"
+  cmd+="set xrange $2;"
+}
+
+
+# prepare to plot one graph
+## $1:xpos, $2:ypos, $3:yrange, $4 yformat, $5:ylabel, $6:title )
+# $1:xpos, $2:ypos, $3:yrange, $4 yformat, $5:xformat )
+# TODO: pass xlabel, ylabel, and title (which may contain whitespace) as parameters
+
+plot_graph_init()
+{
+  cmd+="set origin $1, $2;"
+
+  cmd+="set yrange $3;"
+
+  if [ -n "$4" ]; then
+    cmd+="set format y \"$4\";"
+  else
+    cmd+="set format y \"\";"
+  fi
+
+  if [ -n "$5" ]; then
+    cmd+="set format x \"$5\";"
+  else
+    cmd+="set format x \"\";"
+  fi
+
+
+if [ 1 ]; then
+
+  if [ -n "$xlabel" ]; then
+    cmd+="set xlabel \""$xlabel"\";"
+  else
+    cmd+="unset xlabel;"
+  fi
+
+  if [ -n "$ylabel" ]; then
+    cmd+="set ylabel \""$ylabel"\";"
+  else
+    cmd+="unset ylabel;"
+  fi
+
+  if [ -n "$title" ]; then
+    cmd+="set title \""$title"\";"
+  else
+    cmd+="unset title;"
+  fi
+
+else  ###++++++++++++++++++++++++
+
+  if [ -n "$5" ]; then
+    cmd+="set ylabel \""$5"\";"
+  else
+    cmd+="unset ylabel;"
+  fi
+
+  if [ -n "$6" ]; then
+    cmd+="set title \""$6"\";"
+  else
+    cmd+="unset title;"
+  fi
+fi
+}
+
+
+# plot one graph
+# $1:file name, $2:x_vals, $3:y_vals, optional $4:y_val_mean
+plot_graph()
+{
+  cmd+="plot \"$1\" using $2:$3 with lines linestyle 1;"
+
+  if [ -n "$4" ]; then
+    cmd+="f(x)=$4;replot f(x) with lines linestyle 2;"
+  fi
+}
+
+
+
 while [ $# -gt 0 ]; do
 
-  init_graph_mrs $1
+  init_graph_mrs "$1"
 
-  cd $basedir && gnuplot -persist << EOF
-    $term_opts
-    $frame_opts
-    set multiplot
-    set size 1.0, 0.5
-    set xrange $x
+  plot_init 0.5 "${x}" "${this_format_x}"
 
-    unset title
-    set xlabel "$this_xlabel"
-    set format x "$this_format_x"
+  xlabel="${this_xlabel}"
+  ylabel="${t2_label}"
+  title=""
+  plot_graph_init 0.0 0.0 "${t2_offs}" "${t2_format_y}" "${this_format_x}"
+  plot_graph $1 $x_vals $t2_vals $t2_mean
 
-    set origin 0.0, 0.0
-    set xzeroaxis linetype -1
-    set ylabel "$t2_label"
-    set format y "$t2_format_y"
-    set yrange $t2_offs
-    plot "$1" using $x_vals:$t2_vals with lines linestyle 1
-    $hor_line_t2
+  xlabel=""
+  ylabel="${t1_label}"
+  title="$this_title"
+  plot_graph_init "0.0" "0.5" "${t1_offs}" "${t1_format_y}" ""
+  plot_graph $1 $x_vals $t1_vals $t1_mean
 
-    unset xlabel
-    set format x ""
+  # echo "$cmd" # for debugging
 
-    set title "$this_title"
-
-    set origin 0.0, 0.5
-    set xzeroaxis linetype -1
-    set ylabel "$t1_label"
-    set format y "$t1_format_y"
-    set yrange $t1_offs
-    plot "$1" using $x_vals:$t1_vals with lines linestyle 1
-    $hor_line_t1
-EOF
-# EOF above needs to be at the *beginning* of the line.
+  cd $basedir && echo "$cmd" | gnuplot -persist
 
   shift
 done
