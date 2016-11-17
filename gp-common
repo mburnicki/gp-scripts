@@ -1,7 +1,7 @@
 
 #############################################################################
 #
-#  $Id: gp-common 1.9 2014/02/06 14:08:33 martin TRASH $
+#  $Id: gp-common 1.10 2016/11/17 12:09:37 martin TRASH $
 #
 #  Description:
 #    Include file for the gp-* scripts which create graphs
@@ -11,6 +11,12 @@
 #
 # ---------------------------------------------------------------------------
 #  $Log: gp-common $
+#  Revision 1.10  2016/11/17 12:09:37  martin
+#  Improved term handling.
+#  Added term options for pdf, png, and svg.
+#  Added mjd_epoch variable.
+#  Modified init_graph_mrs().
+#  Cleanup.
 #  Revision 1.9  2014/02/06 14:08:33  martin
 #  Support overriding name of output file.
 #  Changed some names.
@@ -37,98 +43,141 @@
 basedir="."
 auto_range='[*:*]'
 
-if test -z "$lmargin"; then
+mjd_epoch='40587'
+
+
+if test -z "${lmargin}"; then
   lmargin=13;
 fi;
 
-if test -z "$rmargin"; then
+if test -z "${rmargin}"; then
   rmargin=3;
 fi;
 
-loc_gp_opts=$basedir/`dirname $1`/gp_opts
+loc_gp_opts=${basedir}/`dirname $1`/gp_opts
 
-if test -f $loc_gp_opts; then
-  . $loc_gp_opts
+if test -f ${loc_gp_opts}; then
+  . ${loc_gp_opts}
 fi
 
-if test -z "$x"; then
-  x=$auto_range;
+if test -z "${x}"; then
+  x=${auto_range};
 fi;
 
-if test -z "$std_tick"; then
+if test -z "${std_tick}"; then
   std_tick='156250';
 fi
 
-if test -z "$delta_t_offs"; then
+if test -z "${delta_t_offs}"; then
   delta_t_offs='0';
 fi
 
-if test -z "$frame_opts"; then
+if test -z "${frame_opts}"; then
   frame_opts="set grid; unset key; set lmargin $lmargin; set rmargin $rmargin;"
 fi
 
 
 set_this_title()
 {
-  if test -z "$title"; then
+  if test -z "${title}"; then
     this_title="File: $1"
   else
-    this_title="$title"
+    this_title="${title}"
   fi
 }
 
 
 set_this_xlabel_mjd_tod()
 {
-  if test -z "$xlabel"; then
-    this_xlabel="t - MJD $this_mjd TOD $this_tod [s]"
+  if test -z "${xlabel}"; then
+    this_xlabel="t - MJD ${this_mjd} TOD ${this_tod} [s]"
   else
-    this_xlabel="$xlabel"
+    this_xlabel="${xlabel}"
   fi
 }
 
 
 set_this_xlabel_mbgadjtm()
 {
-  if test -z "$xlabel"; then
+  if test -z "${xlabel}"; then
     this_xlabel='time [s]'
   else
-    this_xlabel="$xlabel"
+    this_xlabel="${xlabel}"
   fi
 }
 
 
 set_term_opts()
 {
-  if test -z "$output"; then
+  if test -z "${output}"; then
     this_output=$1
   else
-    this_output=$output
+    this_output=${output}
   fi
 
-  case "$term" in
+  unset out_file
+  unset term_size
+
+  term_size_png="1024,640"
+
+  case "${term}" in
+    'pdf')
+      term_type="pdfcairo enhanced color"
+      out_file="${this_output}.pdf"
+    ;;
+
     'ps')
-      term_opts="set terminal postscript enhanced color; set output \"$this_output.ps\";";
-      echo "Output goes to: $this_output.ps";
+      term_type="postscript enhanced color"
+      out_file="${this_output}.ps"
     ;;
 
     'eps')
-      term_opts="set terminal postscript eps enhanced color; set output \"$this_output.eps\";";
-      echo "Output goes to: $this_output.eps";
+      term_type="postscript eps enhanced color"
+      out_file="${this_output}.eps"
+    ;;
+
+    'png')
+      term_type="png enhanced"
+      term_size=${term_size_png}
+      out_file="${this_output}.png"
+    ;;
+
+    'pngcairo')
+      term_type="pngcairo enhanced color"
+      term_size=${term_size_png}
+      out_file="${this_output}.png"
+    ;;
+
+    'svg')
+      term_type="svg enhanced"
+      out_file="${this_output}.svg"
     ;;
 
     'pbm')
-      term_opts="set terminal pbm small color; set output \"$this_output.pbm\";";
-      echo "Output goes to: $this_output.pbm";
-    ;;
-
-    *)
-      term_opts="set output;";
+      term_type="pbm small color"
+      out_file="${this_output}.pbm"
     ;;
   esac;
 
-  term_opts+="set style line 1 lt 1 lc rgb \"red\" lw 1;"
-  term_opts+="set style line 2 lt 1 lc rgb \"blue\" lw 1;"
+  term_opts="set output"
+
+  if test -n "${out_file}"; then
+    echo "Output goes to: \"${out_file}\""
+    term_opts+=" \"${out_file}\""
+
+    term_opts+="; "
+    term_opts+="set terminal ${term_type}"
+
+    if test -n "${term_size}"; then
+      size=${size:-${term_size}}
+      term_opts+=" size ${size}"
+      echo "Output size: ${size}"
+    fi
+  fi
+
+  term_opts+="; "
+  term_opts+="set style line 1 lt 1 lc rgb \"red\" lw 1; "
+  term_opts+="set style line 2 lt 1 lc rgb \"blue\" lw 1; "
 }
 
 
@@ -151,18 +200,18 @@ set_mjd_tod()
   done < "$1"
 
   # unless this has been overridden on the command line
-  if test -z "$mjd"; then
-    this_mjd=$mjd_from_file;
-    echo "MJD $this_mjd set from file";
+  if test -z "${mjd}"; then
+    this_mjd=${mjd_from_file};
+    echo "MJD ${this_mjd} set from file";
   else
-    this_mjd=$mjd;
+    this_mjd=${mjd};
   fi;
 
-  if test -z "$tod"; then
-    this_tod=$tod_from_file;
-    echo "TOD $this_tod set from file";
+  if test -z "${tod}"; then
+    this_tod=${tod_from_file};
+    echo "TOD ${this_tod} set from file";
   else
-    this_tod=$tod;
+    this_tod=${tod};
   fi;
 }
 
@@ -173,23 +222,23 @@ init_mbgadjtm_graph()
   set_this_title $1
 
   delta_t_col='4'
-  delta_t_vals="(\$$delta_t_col/10000)"
+  delta_t_vals="(\$${delta_t_col}/10000)"
   delta_t_label='delta t [ms]'
   delta_t_format='%.3f'
 
-  if test -z "$delta_t"; then
-    delta_t=$auto_range
+  if test -z "${delta_t}"; then
+    delta_t=${auto_range}
   fi
 
 
   tick_col='8'
-  tick_vals="(\$$tick_col)"
+  tick_vals="(\$${tick_col})"
   tick_label='tick val'
   tick_format='%.0f'
 
   # Unless auto_range is enabled, delta tick is used to specify
   # the tick range to be displayed, e.g. std_tick +/- delta_tick
-  if test -z "$delta_tick"; then
+  if test -z "${delta_tick}"; then
     delta_tick='500'
     #delta_tick='200'
     #delta_tick='100'
@@ -200,20 +249,20 @@ init_mbgadjtm_graph()
     #delta_tick='7'
   fi
 
-  if test -z "$tick"; then
-    tick="[$std_tick-$delta_tick:$std_tick+$delta_tick]"
-    # tick=$auto_range
+  if test -z "${tick}"; then
+    tick="[${std_tick}-${delta_tick}:${std_tick}+${delta_tick}]"
+    # tick=${auto_range}
   fi
 
 
   acc_time_col='6'
-  acc_time_vals="(\$$acc_time_col)"
+  acc_time_vals="(\$${acc_time_col})"
   acc_time_label='acc. time [us]'
   acc_time_format='%.0f'
 
   # Range of time required to access a PCI board.
-  if test -z "$acc_time"; then
-    acc_time=$auto_range
+  if test -z "${acc_time}"; then
+    acc_time=${auto_range}
   fi
 
   set_this_xlabel_mbgadjtm
@@ -227,59 +276,55 @@ init_graph_ntp()
   set_term_opts $1
   set_this_title $1
 
-  mjd_col='1';
-  tod_col='2';
-  x_vals="((\$$tod_col-$this_tod)+(\$$mjd_col-$this_mjd)*86400)";
+  mjd_col='1'
+  tod_col='2'
+  x_vals="((\$${tod_col}-${this_tod})+(\$${mjd_col}-${this_mjd})*86400)";
 
-  if test -z "$x"; then
-    x=$auto_range;
+  if test -z "${x}"; then
+    x=${auto_range};
   fi;
 
 
   loop_time_offs_col='3'
-  loop_time_offs_vals="(\$$loop_time_offs_col*(-1000))"
+  loop_time_offs_vals="(\$${loop_time_offs_col}*(+1000))"
 
   peer_time_offs_col='5'
-  peer_time_offs_vals="(\$$peer_time_offs_col*(-1000))"
-
-  if test -z "$time_offs"; then
-    time_offs=$auto_range;
-  fi;
+  peer_time_offs_vals="(\$${peer_time_offs_col}*(+1000))"
 
   time_offs_label='time offs [ms]'
   time_offs_format='%.3f'
 
-  if test -z "$time_offs"; then
-    time_offs=$auto_range;
+  if test -z "${time_offs}"; then
+    time_offs=${auto_range};
   fi;
 
 
   freq_offs_col='4'
-  freq_offs_vals="(\$$freq_offs_col)"
+  freq_offs_vals="(\$${freq_offs_col})"
   freq_offs_label='freq offs [PPM]'
   freq_offs_format='%.3f'
 
-  if test -z "$freq_offs"; then
-    freq_offs=$auto_range;
+  if test -z "${freq_offs}"; then
+    freq_offs=${auto_range};
   fi;
 
 
   round_trip_col='6';
-  round_trip_vals="(\$$round_trip_col)";
+  round_trip_vals="(\$${round_trip_col})";
   round_trip_label='round trip [ms]'
   round_trip_format='%.3f'
 
-  if test -z "$round_trip"; then
-    round_trip=$auto_range;
+  if test -z "${round_trip}"; then
+    round_trip=${auto_range};
   fi;
 
 
   poll_col='7'
-  poll_vals="(\$$poll_col)";
+  poll_vals="(\$${poll_col})";
   poll_label='poll'
   poll_format='%.0f'
 
-  if test -z "$poll"; then
+  if test -z "${poll}"; then
     poll=[2:11]
   fi;
 
@@ -317,33 +362,33 @@ select_t1()
 # assume $1 is 't1'
   case "$2" in
     'gps')
-      t1_label="$gps_label";
-      t1_col="$gps_col";
+      t1_label="${gps_label}";
+      t1_col="${gps_col}";
     ;;
 
     'pps')
-      t1_label="$pps_label";
-      t1_col="$pps_col";
+      t1_label="${pps_label}";
+      t1_col="${pps_col}";
     ;;
 
     'irig')
-      t1_label="$irig_label";
-      t1_col="$irig_col";
+      t1_label="${irig_label}";
+      t1_col="${irig_col}";
     ;;
 
     'ntp')
-      t1_label=$ntp_label;
-      t1_col=$ntp_col;
+      t1_label=${ntp_label};
+      t1_col=${ntp_col};
     ;;
 
     'ptp')
-      t1_label="$ptp_label";
-      t1_col="$ptp_col";
+      t1_label="${ptp_label}";
+      t1_col="${ptp_col}";
     ;;
 
     'frq')
-      t1_label="$frq_label";
-      t1_col="$frq_col";
+      t1_label="${frq_label}";
+      t1_col="${frq_col}";
     ;;
 
     *)
@@ -351,15 +396,15 @@ select_t1()
     ;;
   esac;
 
-  if test -z "$t1_offs"; then
-    t1_offs=${time_offs-$auto_range};
+  if test -z "${t1_offs}"; then
+    t1_offs="${time_offs}-${auto_range}";
   fi;
 
-  if test -z "$t1_bias"; then
+  if test -z "${t1_bias}"; then
     t1_bias='0';
   fi;
 
-  t1_vals="(\$$t1_col*1e6-$t1_bias)"
+  t1_vals="(\$${t1_col}*1e6-${t1_bias})"
 }
 
 
@@ -369,33 +414,33 @@ select_t2()
 # assume $1 is 't2'
   case "$2" in
     'gps')
-      t2_label="$gps_label";
-      t2_col="$gps_col";
+      t2_label="${gps_label}";
+      t2_col="${gps_col}";
     ;;
 
     'pps')
-      t2_label="$pps_label";
-      t2_col="$pps_col";
+      t2_label="${pps_label}";
+      t2_col="${pps_col}";
     ;;
 
     'irig')
-      t2_label="$irig_label";
-      t2_col="$irig_col";
+      t2_label="${irig_label}";
+      t2_col="${irig_col}";
     ;;
 
     'ntp')
-      t2_label="$ntp_label";
-      t2_col="$ntp_col";
+      t2_label="${ntp_label}";
+      t2_col="${ntp_col}";
     ;;
 
     'ptp')
-      t2_label="$ptp_label";
-      t2_col="$ptp_col";
+      t2_label="${ptp_label}";
+      t2_col="${ptp_col}";
     ;;
 
     'frq')
-      t2_label="$frq_label";
-      t2_col="$frq_col";
+      t2_label="${frq_label}";
+      t2_col="${frq_col}";
     ;;
 
     *)
@@ -403,15 +448,15 @@ select_t2()
     ;;
   esac;
 
-  if test -z "$t2_offs"; then
-    t2_offs=${time_offs-$auto_range};
+  if test -z "${t2_offs}"; then
+    t2_offs="${time_offs}-${auto_range}";
   fi;
 
-  if test -z "$t2_bias"; then
+  if test -z "${t2_bias}"; then
     t2_bias='0';
   fi;
 
-  t2_vals="(\$$t2_col*1e6-$t2_bias)";
+  t2_vals="(\$${t2_col}*1e6-${t2_bias})";
 }
 
 
@@ -457,16 +502,17 @@ init_graph_mrs()
 
   mjd_col='1';
   tod_col='2';
-  x_vals="((\$$tod_col-$this_tod)+(\$$mjd_col-$this_mjd)*86400)";
+# x_vals="((\$${tod_col}-${this_tod})+(\$${mjd_col}-${this_mjd})*86400)";
+  x_vals="(((\$${tod_col}-${this_tod})+(\$${mjd_col}-${this_mjd})*86400)/3600)";
 
-  if test -z "$x"; then
-    x=$auto_range;
+  if test -z "${x}"; then
+    x=${auto_range};
   fi;
 
   select_time 't1' ${t1-'gps'}
   select_time 't2' ${t2-'ntp'}
 
-  this_xlabel="t - MJD $this_mjd TOD $this_tod [s]"
+  this_xlabel="t - MJD ${this_mjd} TOD ${this_tod} [s]"
   this_format_x='%.0f'
   # t1_format_y='%.3f'
   # t2_format_y='%.3f'
