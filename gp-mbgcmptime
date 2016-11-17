@@ -2,7 +2,7 @@
 
 #############################################################################
 #
-#  $Id: gp-mbgcmptime 1.1.1.2 2014/02/06 16:38:23 martin TRASH $
+#  $Id: gp-mbgcmptime 1.1.1.3 2016/11/17 15:05:47 martin TRASH $
 #
 #  Description:
 #    Plot time offsets reported by  mbgsvcd.
@@ -18,6 +18,9 @@
 #
 # ---------------------------------------------------------------------------
 #  $Log: gp-mbgcmptime $
+#  Revision 1.1.1.3  2016/11/17 15:05:47  martin
+#  Make the title string adjustable.
+#  Show compensated deltas.
 #  Revision 1.1.1.2  2014/02/06 16:38:23  martin
 #  Started to use new syntax.
 #  Revision 1.1.1.1  2013/11/14 17:02:53  martin
@@ -34,6 +37,7 @@ init_graph()
 {
 #  set_mjd_tod $1;
   set_term_opts $1;
+  set_this_title $1
 
   mjd_col='1';
   tod_col='2';
@@ -44,8 +48,8 @@ init_graph()
   fi;
 
 
-  time_offs_col='6'
-#  time_offs_vals="(\$$time_offs_col*1000)"
+  # time_offs_col='6'  # the raw deltas, including latency
+  time_offs_col='12'   # the compensated deltas
   time_offs_vals="(\$$time_offs_col/1000)"
 
   if test -z "$time_offs"; then
@@ -66,7 +70,7 @@ while [ $# -gt 0 ]; do
 
     set origin 0.0, 0.0
 
-    set title "File: $1"
+    set title "$this_title"
 
     set ylabel 'time offs [ms]'
     set yrange $time_offs
