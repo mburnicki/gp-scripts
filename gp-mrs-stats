@@ -1,0 +1,158 @@
+#!/bin/sh
+
+#############################################################################
+#
+#  $Id: gp-mrs-stats 1.2.1.3 2016/11/17 15:06:20 martin TRASH $
+#
+#  Description:
+#    Plot MRS statistic files using gnuplot.
+#
+#    (c) Martin Burnicki <martin.burnicki@meinberg.de>
+#
+#    Two graphs are plotted above each other, using the same time range x,
+#    and selected MRS sources t1 and t2, which can be selected from:
+#    gps, pps, irig, ntp, ptp, and frq
+#
+#    Some parameters can be overridden on the command line, e.g.:
+#
+#    x=[0:100]                  limit x range (time) from 0 to 100
+#    x=[100:*]                  start x min at 100, auto scale x max
+#    t1=ptp                     select PTP offsets for t1, default: gps
+#    t2=pps                     select PPS offsets for t1, default: ntp
+#    time_offs=[-0.003:0.003]   limit common time offset range from -3 to 3
+#    t1_offs=[-0.001:0.001]     limit t1 only time offset range from -3 to 3
+#    t2_bias=2.5                add bias 2.5 to t2 osffset range
+#
+# ---------------------------------------------------------------------------
+#  $Log: gp-mrs-stats $
+#  Revision 1.2.1.3  2016/11/17 15:06:20  martin
+#  *** empty log message ***
+#  Revision 1.2.1.2  2014/02/07 12:18:25  martin
+#  Started new scripting.
+#  Revision 1.2.1.1  2014/02/06 16:38:28  martin
+#  Started to use new syntax.
+#  Revision 1.2  2014/02/06 14:41:01  martin
+#  Moved some stuff to gp-common.
+#  Use common syntax.
+#  Revision 1.1  2010/03/24 14:21:39  martin
+#  Initial revision.
+#
+#############################################################################
+
+# uncomment to override defaults
+#if test -z "$lmargin"; then
+#  lmargin=17;
+#fi;
+
+. gp-common $@
+
+
+
+# init plot settings
+# $1: ypos, $2: xrange
+plot_init()
+{
+  cmd="$term_opts"
+  cmd+="$frame_opts"
+  cmd+="set multiplot;"
+  cmd+="set size 1.0, $1;"
+  cmd+="set xrange $2;"
+}
+
+
+# prepare to plot one graph
+## $1:xpos, $2:ypos, $3:yrange, $4 yformat, $5:ylabel, $6:title )
+# $1:xpos, $2:ypos, $3:yrange, $4 yformat, $5:xformat )
+# TODO: pass xlabel, ylabel, and title (which may contain whitespace) as parameters
+
+plot_graph_init()
+{
+  cmd+="set origin $1, $2;"
+
+  cmd+="set yrange $3;"
+
+  if [ -n "$4" ]; then
+    cmd+="set format y \"$4\";"
+  else
+    cmd+="set format y \"\";"
+  fi
+
+  if [ -n "$5" ]; then
+    cmd+="set format x \"$5\";"
+  else
+    cmd+="set format x \"\";"
+  fi
+
+
+if [ 1 ]; then
+
+  if [ -n "$xlabel" ]; then
+    cmd+="set xlabel \""$xlabel"\";"
+  else
+    cmd+="unset xlabel;"
+  fi
+
+  if [ -n "$ylabel" ]; then
+    cmd+="set ylabel \""$ylabel"\";"
+  else
+    cmd+="unset ylabel;"
+  fi
+
+  if [ -n "$title" ]; then
+    cmd+="set title \""$title"\";"
+  else
+    cmd+="unset title;"
+  fi
+
+  cmd+="set xzeroaxis linetype -1;"
+
+else  ###++++++++++++++++++++++++
+
+  if [ -n "$5" ]; then
+    cmd+="set ylabel \""$5"\";"
+  else
+    cmd+="unset ylabel;"
+  fi
+
+  if [ -n "$6" ]; then
+    cmd+="set title \""$6"\";"
+  else
+    cmd+="unset title;"
+  fi
+fi
+}
+
+
+# plot one graph
+# $1:file name, $2:x_vals, $3:y_vals, optional $4:y_val_mean
+plot_graph()
+{
+  cmd+="plot \"$1\" using $2:$3 with lines linestyle 1;"
+
+  if [ -n "$4" ]; then
+    cmd+="f(x)=$4;replot f(x) with lines linestyle 2;"
+  fi
+}
+
+
+
+while [ $# -gt 0 ]; do
+
+  init_graph_mrs "$1"
+
+  plot_init 1.0 "${x}" "${this_format_x}"
+
+##  xlabel="${this_xlabel}"
+  xlabel='Time [h]'
+  ylabel="${t1_label}"
+
+  title="$this_title"
+  plot_graph_init "0.0" "0.0" "${t1_offs}" "${t1_format_y}" "${this_format_x}"
+  plot_graph $1 $x_vals $t1_vals $t1_mean
+
+  # echo "$cmd" # for debugging
+
+  cd $basedir && echo "$cmd" | gnuplot -persist
+
+  shift
+done
