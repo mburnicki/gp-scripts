@@ -2,7 +2,7 @@
 
 #############################################################################
 #
-#  $Id: gp-mbgsvcd 1.1.1.3 2014/02/06 16:38:24 martin TRASH $
+#  $Id: gp-mbgsvcd 1.1.1.4 2016/11/17 15:05:59 martin TRASH $
 #
 #  Description:
 #    Plot time offsets reported by mbgsvcd.
@@ -18,6 +18,8 @@
 #
 # ---------------------------------------------------------------------------
 #  $Log: gp-mbgsvcd $
+#  Revision 1.1.1.4  2016/11/17 15:05:59  martin
+#  *** empty log message ***
 #  Revision 1.1.1.3  2014/02/06 16:38:24  martin
 #  Started to use new syntax.
 #  Revision 1.1.1.2  2013/11/14 17:03:15  martin
@@ -46,9 +48,9 @@ init_graph()
 #  set xdata time
 #  set timefmt "%Y-%m-%d %H:%M:%S"
 
-  time_offs_col='3'
-#  time_offs_vals="(\$$time_offs_col*1000)"
-  time_offs_vals="(\$$time_offs_col)"
+  time_offs_col='5'
+  time_offs_vals="(\$$time_offs_col*1000)"
+#  time_offs_vals="(\$$time_offs_col)"
 
   if test -z "$time_offs"; then
     time_offs=$auto_range;
