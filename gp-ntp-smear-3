@@ -1,0 +1,145 @@
+#!/bin/sh
+
+#############################################################################
+#
+#  $Id: gp-ntp-smear 1.1 2016/11/17 12:01:54 martin TRASH $
+#
+#  Description:
+#    Plot time offsets reported by ntptest -Z
+#
+#    (c) Martin Burnicki <martin.burnicki@meinberg.de>
+#
+#  Some parameters can be overridden on the command line, e.g.:
+#
+#    x=[0:100]                  limit x range (time) from 0 to 100
+#    time_offs=[-0.003:0.003]   limit time offset range from -3 to 3
+#    freq_offs=[*:*]            auto scale frequency offset (the default)
+#    roundtrip=[0:*]            limit roundtrip range from 0 to auto
+#
+# ---------------------------------------------------------------------------
+#  $Log: gp-ntp-smear $
+#  Revision 1.1  2016/11/17 12:01:54  martin
+#  Initial revision
+#
+#############################################################################
+
+. gp-common $@
+
+
+server_dirs=(`find $1 -type d -name "server"`)
+
+for dir in ${server_dirs[@]}; do
+  echo "server_dir: ${dir}"
+done;
+
+
+
+client_dirs=(`find $1 -type d -name "client-*" | sort`)
+
+for dir in ${client_dirs[@]}; do
+  echo "client_dir: ${dir}"
+done;
+
+
+
+all_dirs=(${server_dirs[@]} ${client_dirs[@]})
+
+for dir in ${all_dirs[@]}; do
+  echo "all_dir: ${dir}"
+done;
+
+
+
+while [ $# -gt 0 ]; do
+
+  init_graph_ntp $1
+
+  x_vals="( ( ( \$${mjd_col} - ${mjd_epoch} ) * 86400) + \$${tod_col} )"
+
+  # The expression below is *empty* if the substring
+  # is found in the searched string.
+  if [ -z "${1##*86400*}" ] ; then
+    start=`date -u -d "2016-12-30 23:00" +%s`  # 86400
+    echo "Smear interval 86400."
+  else
+    if [ -z "${1##*7200*}" ] ; then
+      echo "Smear interval 7200."
+      start=`date -u -d "2016-12-31 21:00" +%s`  # 7200
+    else
+      if [ -z "${1##*2000*}" ] ; then
+        echo "Smear interval 2000."
+        start=`date -u -d "2016-12-31 21:00" +%s`  # 2000
+      else
+        echo "No smear interval found in dir name \"$1\"."
+        start=`date -u -d "2016-12-31 10:00" +%s`
+      fi
+    fi
+  fi
+
+##  end=`date -u -d "2017-01-01 04:00" +%s`
+  end=`date -u -d "2017-01-01 08:00" +%s`
+
+
+
+  ## 'set timefmt' specifies the format to *read* time values from file
+  ## 'set format x' specifies the format to *print* time values on the x axis
+  # set format x "%Y-%m-%d\n%H:%M:%S"
+  # set format x "%M:%S"
+  x_opts="set xdata time; set timefmt \"%Y-%m-%d %H:%M:%S\"; "
+  x_opts+="set format x \"%m-%d\n%H:%M\"; "
+#  x_opts+="set xtics out rotate by -80; "
+
+  cd $basedir && gnuplot -persist << EOF
+    ${term_opts}
+    ${frame_opts}
+    set multiplot
+    set size 1.0, 0.25
+
+    set title "$1"
+
+    set xdata time
+    set timefmt "%s"
+    set xrange [${start}:${end}]
+
+    set format x ""
+    set noxlabel
+
+    set ylabel "smear offset [ms]"
+    set yrange [-1200:200]
+    set origin 0.0, 0.75
+    plot "$1/client-poll-auto-01/ntptest.log" using (timecolumn(2,"%Y-%m-%d %H:%M:%S")):9 with lines lt rgb "green", \
+         "$1/client-poll-auto-02/ntptest.log" using (timecolumn(2,"%Y-%m-%d %H:%M:%S")):9 with lines lt rgb "blue", \
+         "$1/client-poll-auto-03/ntptest.log" using (timecolumn(2,"%Y-%m-%d %H:%M:%S")):9 with lines lt rgb "violet", \
+         "$1/server/ntptest.log" using (timecolumn(2,"%Y-%m-%d %H:%M:%S")):9 with lines lt rgb "red" dt "-- "
+
+    set notitle
+
+    set ylabel "${time_offs_label}"
+    set yrange ${time_offs}
+    set origin 0.0, 0.5
+    plot "$1/client-poll-auto-01/loopstats.tmp" using ${x_vals}:${loop_time_offs_vals} with lines lt rgb "green", \
+         "$1/client-poll-auto-02/loopstats.tmp" using ${x_vals}:${loop_time_offs_vals} with lines lt rgb "blue", \
+         "$1/client-poll-auto-03/loopstats.tmp" using ${x_vals}:${loop_time_offs_vals} with lines lt rgb "violet"
+
+    set ylabel "${freq_offs_label}"
+    set yrange ${freq_offs}
+    set origin 0.0, 0.25
+    plot "$1/client-poll-auto-01/loopstats.tmp" using ${x_vals}:${freq_offs_vals} with lines lt rgb "green", \
+         "$1/client-poll-auto-02/loopstats.tmp" using ${x_vals}:${freq_offs_vals} with lines lt rgb "blue", \
+         "$1/client-poll-auto-03/loopstats.tmp" using ${x_vals}:${freq_offs_vals} with lines lt rgb "violet"
+
+    set format x "%m-%d\n%H:%M"
+
+
+    set ylabel "${poll_label}"
+    set format y "${poll_format}"
+    set yrange ${poll}
+    set origin 0.0, 0.0
+    plot "$1/client-poll-auto-01/loopstats.tmp" using ${x_vals}:${poll_vals} with lines lt rgb "green", \
+         "$1/client-poll-auto-02/loopstats.tmp" using ${x_vals}:${poll_vals} with lines lt rgb "blue", \
+
+EOF
+# EOF above needs to be at the *beginning* of the line.
+
+  shift
+done
