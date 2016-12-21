@@ -137,6 +137,7 @@ while [ $# -gt 0 ]; do
     set origin 0.0, 0.0
     plot "$1/client-poll-auto-01/loopstats.tmp" using ${x_vals}:${poll_vals} with lines lt rgb "green", \
          "$1/client-poll-auto-02/loopstats.tmp" using ${x_vals}:${poll_vals} with lines lt rgb "blue", \
+         "$1/client-poll-auto-03/loopstats.tmp" using ${x_vals}:${poll_vals} with lines lt rgb "violet"
 
 EOF
 # EOF above needs to be at the *beginning* of the line.
