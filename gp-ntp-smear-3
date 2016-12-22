@@ -25,6 +25,7 @@
 
 . gp-common $@
 
+# Using bash array feature.
 
 server_dirs=(`find $1 -type d -name "server"`)
 
