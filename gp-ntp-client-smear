@@ -1,0 +1,65 @@
+#!/bin/sh
+
+#############################################################################
+#
+# Plot time offsets reported by ntptest -Z
+#
+# (c) Martin Burnicki <martin.burnicki@meinberg.de>
+#
+# Some parameters can be overridden on the command line, e.g.:
+#
+#   x=[0:100]                  limit x range (time) from 0 to 100
+#   time_offs=[-0.003:0.003]   limit time offset range from -3 to 3
+#   freq_offs=[*:*]            auto scale frequency offset (the default)
+#   roundtrip=[0:*]            limit roundtrip range from 0 to auto
+#
+#############################################################################
+
+while [ $# -gt 0 ]; do
+
+  ## 'set timefmt' specifies the format to *read* time values from file
+  ## 'set format x' specifies the format to *print* time values on the x axis
+  # set format x "%Y-%m-%d\n%H:%M:%S"
+  # set format x "%M:%S"
+  x_opts="set xdata time; set timefmt \"%Y-%m-%d %H:%M:%S\"; "
+  x_opts+="set format x \"%m-%d\n%H:%M\"; "
+#  x_opts+="set xtics out rotate by -80; "
+
+  gnuplot -persist << EOF
+##    $term_opts
+##    $frame_opts
+#    set multiplot
+#    set size 1.0, 1.0
+
+    set title "$1"
+
+#    set xdata time
+#    set timefmt "%s"
+#    set xrange [${start}:${end}]
+
+#    set format x ""
+#    set noxlabel
+
+    set ylabel "smear offset [ms]"
+#    set yrange [-1200:200]
+    set yrange [*:*]
+#    set origin 0.0, 0.6666666666
+##    plot "$1" using (timecolumn(2,"%Y-%m-%d %H:%M:%S")):9 with lines lt rgb "green"
+##    plot "$1" using (timecolumn(2,"%Y-%m-%d %H:%M:%S")):7 with lines lt rgb "green"
+    plot "$1" using 7 with lines lt rgb "green"
+#         "$1" using 7 with lines lt rgb "blue", \
+#         "$1" using 8 with lines lt rgb "violet"
+
+#    set notitle
+
+#    set format x "%m-%d\n%H:%M"
+
+#    plot "$1/client-poll-4/loopstats.tmp" using $x_vals:$freq_offs_vals with lines lt rgb "green", \
+#         "$1/client-poll-6/loopstats.tmp" using $x_vals:$freq_offs_vals with lines lt rgb "blue", \
+#         "$1/client-poll-10/loopstats.tmp" using $x_vals:$freq_offs_vals with lines lt rgb "violet"
+
+EOF
+# EOF above needs to be at the *beginning* of the line.
+
+  shift
+done
