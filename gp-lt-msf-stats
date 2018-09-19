@@ -45,7 +45,7 @@ init_graph_lt_msf_stats()
 
 
   sync_state_col='4'
-  sync_state_vals="(\$${sync_state_col})"
+  sync_state_vals="(-\$${sync_state_col}+2)"
   sync_state_label='sync state'
   sync_state_format='%.0f'
 
