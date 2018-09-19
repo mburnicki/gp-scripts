@@ -2,21 +2,10 @@
 
 #############################################################################
 #
-#  $Id: gp-log-offs 1.2.1.1 2014/02/06 16:37:58 martin TRASH $
+# Plot logfiles created by the Meinberg Time Adjustment Service
+# using gnuplot.
 #
-#  Description:
-#    Plot logfiles created by the Meinberg Time Adjustment Service
-#    using gnuplot.
-#
-#    (c) Martin Burnicki <martin.burnicki@meinberg.de>
-#
-# ---------------------------------------------------------------------------
-#  $Log: gp-log-offs $
-#  Revision 1.2.1.1  2014/02/06 16:37:58  martin
-#  Started to use new syntax.
-#  Revision 1.2  2013/11/14 16:12:26  martin
-#  Use common include file gp_common.
-#  Revision 1.1  2013/11/14 11:40:35  martin
+# (c) Martin Burnicki <martin.burnicki@meinberg.de>
 #
 #############################################################################
 

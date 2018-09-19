@@ -1,42 +1,10 @@
 
 #############################################################################
 #
-#  $Id: gp-common 1.10 2016/11/17 12:09:37 martin TRASH $
+#  Include file for the gp-* scripts that create graphs
+#  from various log files.
 #
-#  Description:
-#    Include file for the gp-* scripts which create graphs
-#    from various log files.
-#
-#    (c) Martin Burnicki <martin.burnicki@meinberg.de>
-#
-# ---------------------------------------------------------------------------
-#  $Log: gp-common $
-#  Revision 1.10  2016/11/17 12:09:37  martin
-#  Improved term handling.
-#  Added term options for pdf, png, and svg.
-#  Added mjd_epoch variable.
-#  Modified init_graph_mrs().
-#  Cleanup.
-#  Revision 1.9  2014/02/06 14:08:33  martin
-#  Support overriding name of output file.
-#  Changed some names.
-#  Moved MRS stuff here.
-#  Revision 1.8  2013/12/06 09:33:10  martin
-#  Support loopstats poll interval.
-#  Revision 1.7  2013/12/05 08:50:00  andreja
-#  Support overriding xlabel.
-#  Revision 1.6  2013/12/04 14:02:05  martin
-#  Fixed variable names used for NTP peerstats.
-#  Revision 1.5  2013/11/14 17:02:09  martin
-#  Moved init function for NTP plots here.
-#  Revision 1.4  2013/11/14 16:38:19  martin
-#  A function to set title.
-#  Revision 1.3  2013/11/14 16:10:39  martin
-#  Support files created by mbgadjtm.
-#  Revision 1.2  2010/03/24 12:07:49  martin
-#  Moved set_mjd_tod() to gp-common.
-#  Revision 1.1  2010/02/03 16:01:51  martin
-#  Initial revision.
+#  (c) Martin Burnicki <martin.burnicki@meinberg.de>
 #
 #############################################################################
 

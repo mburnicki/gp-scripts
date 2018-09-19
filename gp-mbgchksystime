@@ -2,24 +2,14 @@
 
 #############################################################################
 #
-#  $Id: gp-mbgchksystime 1.1.1.2 2014/02/06 16:38:22 martin TRASH $
+# Plot time offsets reported by mbgsvcd and mbgchksystime.
 #
-#  Description:
-#    Plot time offsets reported by mbgsvcd and mbgchksystime.
+# (c) Martin Burnicki <martin.burnicki@meinberg.de>
 #
-#    (c) Martin Burnicki <martin.burnicki@meinberg.de>
+# Some parameters can be overridden on the command line, e.g.:
 #
-#  Some parameters can be overridden on the command line, e.g.:
-#
-#    x=[0:100]                  limit x range (time) from 0 to 100
-#    time_offs=[-0.003:0.003]   limit time offset range from -3 to 3
-#
-# ---------------------------------------------------------------------------
-#  $Log: gp-mbgchksystime $
-#  Revision 1.1.1.2  2014/02/06 16:38:22  martin
-#  Started to use new syntax.
-#  Revision 1.1.1.1  2013/11/14 17:02:40  martin
-#  Revision 1.1  2013/11/14 11:40:36  martin
+#   x=[0:100]                  limit x range (time) from 0 to 100
+#   time_offs=[-0.003:0.003]   limit time offset range from -3 to 3
 #
 #############################################################################
 

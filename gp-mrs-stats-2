@@ -2,38 +2,23 @@
 
 #############################################################################
 #
-#  $Id: gp-mrs-stats 1.2.1.2 2014/02/07 12:18:25 martin TRASH $
+# Plot MRS statistic files using gnuplot.
 #
-#  Description:
-#    Plot MRS statistic files using gnuplot.
+# (c) Martin Burnicki <martin.burnicki@meinberg.de>
 #
-#    (c) Martin Burnicki <martin.burnicki@meinberg.de>
+# Two graphs are plotted above each other, using the same time range x,
+# and selected MRS sources t1 and t2, which can be selected from:
+# gps, pps, irig, ntp, ptp, and frq
 #
-#    Two graphs are plotted above each other, using the same time range x,
-#    and selected MRS sources t1 and t2, which can be selected from:
-#    gps, pps, irig, ntp, ptp, and frq
+# Some parameters can be overridden on the command line, e.g.:
 #
-#    Some parameters can be overridden on the command line, e.g.:
-#
-#    x=[0:100]                  limit x range (time) from 0 to 100
-#    x=[100:*]                  start x min at 100, auto scale x max
-#    t1=ptp                     select PTP offsets for t1, default: gps
-#    t2=pps                     select PPS offsets for t1, default: ntp
-#    time_offs=[-0.003:0.003]   limit common time offset range from -3 to 3
-#    t1_offs=[-0.001:0.001]     limit t1 only time offset range from -3 to 3
-#    t2_bias=2.5                add bias 2.5 to t2 osffset range
-#
-# ---------------------------------------------------------------------------
-#  $Log: gp-mrs-stats $
-#  Revision 1.2.1.2  2014/02/07 12:18:25  martin
-#  Started new scripting.
-#  Revision 1.2.1.1  2014/02/06 16:38:28  martin
-#  Started to use new syntax.
-#  Revision 1.2  2014/02/06 14:41:01  martin
-#  Moved some stuff to gp-common.
-#  Use common syntax.
-#  Revision 1.1  2010/03/24 14:21:39  martin
-#  Initial revision.
+#   x=[0:100]                  limit x range (time) from 0 to 100
+#   x=[100:*]                  start x min at 100, auto scale x max
+#   t1=ptp                     select PTP offsets for t1, default: gps
+#   t2=pps                     select PPS offsets for t1, default: ntp
+#   time_offs=[-0.003:0.003]   limit common time offset range from -3 to 3
+#   t1_offs=[-0.001:0.001]     limit t1 only time offset range from -3 to 3
+#   t2_bias=2.5                add bias 2.5 to t2 osffset range
 #
 #############################################################################
 

@@ -2,28 +2,15 @@
 
 #############################################################################
 #
-#  $Id: gp-ptp-stats 1.3.1.1 2014/02/06 16:38:56 martin TRASH $
+# Plot PTP statistic files using gnuplot.
 #
-#  Description:
-#    Plot PTP statistic files using gnuplot.
+# (c) Martin Burnicki <martin.burnicki@meinberg.de>
 #
-#    (c) Martin Burnicki <martin.burnicki@meinberg.de>
+# Some parameters can be overridden on the command line, e.g.:
 #
-#  Some parameters can be overridden on the command line, e.g.:
-#
-#    x=[0:100]                  limit x range (time) from 0 to 100
-#    time_offs=[-0.003:0.003]   limit time offset range from -3 to 3
-#    delay=[*:*]                auto scale delay (the default)
-#
-# ---------------------------------------------------------------------------
-#  $Log: gp-ptp-stats $
-#  Revision 1.3.1.1  2014/02/06 16:38:56  martin
-#  Started to use new syntax.
-#  Revision 1.3  2014/02/06 14:11:57  martin
-#  Replaced obsoleted gnuplot keywords.
-#  Revision 1.2  2010/03/24 12:07:49  martin
-#  Moved set_mjd_tod() to gp-common.
-#  Revision 1.1  2010/03/11 16:34:51  martin
+#   x=[0:100]                  limit x range (time) from 0 to 100
+#   time_offs=[-0.003:0.003]   limit time offset range from -3 to 3
+#   delay=[*:*]                auto scale delay (the default)
 #
 #############################################################################
 
