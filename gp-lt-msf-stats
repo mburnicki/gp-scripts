@@ -1,0 +1,99 @@
+#!/bin/sh
+
+#############################################################################
+#
+# Plot LANTIME MSF sync statistics using gnuplot.
+#
+# (c) Martin Burnicki <martin.burnicki@meinberg.de>
+#
+#  Some parameters can be overridden on the command line, e.g.:
+#
+#    x=[0:100]               limit x range (time) from 0 to 100
+#    signal=[0:110]          limit signal range from 0 to 110
+#    sync_state=[*:*]        auto scale sync state value
+#
+#############################################################################
+
+. gp-common $@
+
+
+init_graph_lt_msf_stats()
+{
+  set_mjd_tod $1
+  set_term_opts $1
+  set_this_title $1
+
+  mjd_col='1'
+  tod_col='2'
+  x_vals="((\$${tod_col}-${this_tod})+(\$${mjd_col}-${this_mjd})*86400)";
+
+  if test -z "${x}"; then
+    x=${auto_range};
+  fi;
+
+
+  signal_col='3'
+  signal_vals="(\$${signal_col})"
+
+  signal_label='signal'
+  signal_format='%.0f'
+
+  if test -z "${signal}"; then
+    # signal=${auto_range};
+    signal="[0:120]"
+  fi;
+
+
+  sync_state_col='4'
+  sync_state_vals="(\$${sync_state_col})"
+  sync_state_label='sync state'
+  sync_state_format='%.0f'
+
+  if test -z "${sync_state}"; then
+    # sync_state=${auto_range};
+    sync_state="[0:5]";
+  fi;
+
+  set_this_xlabel_mjd_tod
+  this_format_x="%.0f"
+}
+
+
+
+while [ $# -gt 0 ]; do
+
+  init_graph_lt_msf_stats $1
+
+  cd $basedir && gnuplot -persist << EOF
+    $term_opts
+    $frame_opts
+    set multiplot
+    set size 1.0, 0.5
+    set xrange $x
+
+    set notitle
+    set xlabel "$this_xlabel"
+    set format x "$this_format_x"
+
+    set origin 0.0, 0.0
+    set ylabel "$sync_state_label"
+    set format y "$sync_state_format"
+    set yrange $sync_state
+    plot "$1" using $x_vals:$sync_state_vals with lines
+
+    set noxlabel
+    set format x ""
+
+    set title "$this_title"
+
+    set origin 0.0, 0.5
+    set xzeroaxis linetype -1
+    set ylabel "$signal_label"
+    set format y "$signal_format"
+    set yrange $signal
+    plot "$1" using $x_vals:$signal_vals with lines
+EOF
+# EOF above needs to be at the *beginning* of the line.
+
+  shift
+done
