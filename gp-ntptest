@@ -1,0 +1,89 @@
+#!/bin/sh
+
+#############################################################################
+#
+#  $Id$
+#
+#  Description:
+#    Plot time offsets reported by ntptest -Z
+#
+#    (c) Martin Burnicki <martin.burnicki@meinberg.de>
+#
+#  Some parameters can be overridden on the command line, e.g.:
+#
+#    x=[0:100]                  limit x range (time) from 0 to 100
+#    time_offs=[-0.003:0.003]   limit time offset range from -3 to 3
+#    freq_offs=[*:*]            auto scale frequency offset (the default)
+#    roundtrip=[0:*]            limit roundtrip range from 0 to auto
+#
+# ---------------------------------------------------------------------------
+#  $Log$
+#
+#############################################################################
+
+. gp-common $@
+
+init_graph()
+{
+  set_term_opts $1;
+  set_this_title $1
+
+  # x_vals="((\$$tod_col-$this_tod)+(\$$mjd_col-$this_mjd)*86400)";
+  x_vals="(\$3)"
+
+  if test -z "$x"; then
+    x=$auto_range;
+  fi;
+
+  time_offs_col='10'
+  time_offs_vals="(\$$time_offs_col)"
+  # time_offs_vals="(\$$time_offs_col*1000)"
+
+  if test -z "$time_offs"; then
+    time_offs=$auto_range;
+  fi;
+}
+
+
+
+while [ $# -gt 0 ]; do
+
+  ## set xrange ["2016-12-31 16:20":"2016-12-31 16:30"]
+
+  init_graph $1
+
+  ## 'set timefmt' specifies the format to *read* time values from file
+  ## 'set format x' specifies the format to *print* time values on the x axis
+  # set format x "%Y-%m-%d\n%H:%M:%S"
+  # set format x "%M:%S"
+  x_opts="set xdata time; "
+  x_opts+="set timefmt \"%Y-%m-%d %H:%M:%S\"; "
+  x_opts+="set format x \"%m-%d\n%H:%M\"; "
+#  x_opts+="set xtics out rotate by -80; "
+
+  cd $basedir && gnuplot -persist << EOF
+    $term_opts
+    $frame_opts
+    set multiplot
+    set size 1.0, 1.0
+
+    set origin 0.0, 0.0
+
+    set title "$this_title"
+
+    $x_opts
+
+#    set xrange $x
+
+    set ylabel 'time offs [ms]'
+    set yrange $time_offs
+    set format y "%.3f"
+    # plot "$1" using $time_offs_vals with lines
+    # plot "$1" using $x_vals:$time_offs_vals with lines
+    plot "$1" using 2:9 with lines
+#    plot "$1" using 9 with lines
+EOF
+# EOF above needs to be at the *beginning* of the line.
+
+  shift
+done
