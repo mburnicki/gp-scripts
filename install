@@ -1,0 +1,31 @@
+#!/bin/bash
+
+tgt_dir="/usr/local/bin"
+
+base_dir=$(dirname $0)
+script_name=$(basename $0)
+repo_base_dir=$(git rev-parse --show-toplevel)
+
+
+# Check if a hook dir has explicitly been configured.
+git_hook_dir=$(git config core.hooksPath)
+
+# If not, we use the default hook dir.
+git_hook_dir=${repo_base_dir}/.git/hooks
+
+
+# echo "base dir: ${base_dir}"
+# echo "script name: ${script_name}"
+# echo ""
+# echo "hook dir: ${git_hook_dir}"
+
+
+# Create symbolic links in the target directory.
+
+files=$(git ls-files)
+
+for f in ${files}; do
+  cmd="sudo ln -sf ${repo_base_dir}/${f} ${tgt_dir}/${f}"
+  echo "${cmd}"
+  eval "${cmd}"
+done
