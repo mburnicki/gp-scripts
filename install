@@ -2,30 +2,34 @@
 
 tgt_dir="/usr/local/bin"
 
-base_dir=$(dirname $0)
-script_name=$(basename $0)
-repo_base_dir=$(git rev-parse --show-toplevel)
+# Determine the full path to our repo.
+long_repo_base_dir=$(git rev-parse --show-toplevel)
 
+# If the repo is below the target path, we just use
+# a short path for the links, otherwise the full path.
 
-# Check if a hook dir has explicitly been configured.
-git_hook_dir=$(git config core.hooksPath)
+if [[ ${long_repo_base_dir} == *"${tgt_dir}/"* ]]; then
+  # Use a short path.
+  repo_base_dir=${long_repo_base_dir#"${tgt_dir}/"}
+else
+  # Use the full path
+  repo_base_dir=${long_repo_base_dir}
+fi
 
-# If not, we use the default hook dir.
-git_hook_dir=${repo_base_dir}/.git/hooks
-
-
-# echo "base dir: ${base_dir}"
-# echo "script name: ${script_name}"
+# echo "long_repo_base_dir: ${long_repo_base_dir}"
+# echo "repo_base_dir: ${repo_base_dir}"
 # echo ""
-# echo "hook dir: ${git_hook_dir}"
 
 
-# Create symbolic links in the target directory.
+# For all files except this install script
+# we create symbolic links in the target directory.
 
 files=$(git ls-files)
 
 for f in ${files}; do
-  cmd="sudo ln -sf ${repo_base_dir}/${f} ${tgt_dir}/${f}"
-  echo "${cmd}"
-  eval "${cmd}"
+  if [ "${f}" != "install" ]; then
+    cmd="sudo ln -sf ${repo_base_dir}/${f} ${tgt_dir}/${f}"
+    echo "${cmd}"
+    eval "${cmd}"
+  fi
 done
