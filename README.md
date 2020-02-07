@@ -1,7 +1,7 @@
 # gp-scripts Collection
 
-A collection of Linux scripts that can be used to create graphs
-from NTP loopstats and similar files.
+A collection of 'gnuplot' scripts that can be used to plot data
+from various log file formats, e.g. the loopstats files created by ntpd.
 
 For information how to install this, see:
 
