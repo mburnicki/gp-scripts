@@ -21,10 +21,10 @@ fi
 # echo ""
 
 
-# For all files except this install script
-# we create symbolic links in the target directory.
+# For all except some special files, we create
+# symbolic links in the target directory.
 
-files=$(git ls-files)
+files=$(git ls-files | grep -v install | grep -v README | grep -v .editorconfig)
 
 for f in ${files}; do
   if [ "${f}" != "install" ]; then
