@@ -1,17 +1,22 @@
 # gp-scripts Collection
 
-A collection of 'gnuplot' scripts that can be used to plot data
-from various log file formats, e.g. the loopstats files created by ntpd.
+A collection of 'gnuplot' scripts that can be used to plot data from
+various log file formats, e.g. the `loopstats` files created by ntpd.
+
+See the top of the individual script files for details.
 
 
 ## Installation
 
-For information how to install these scripts, see:
+Run `./install` from the base directory to create symbolic links
+in `/usr/local/bin/` that point to the individual scripts.
+Afterwards, the scripts can be called from within any directory,
+e.g. the directory where the data files are located.
 
-https://wiki.py.meinberg.de/meinberg_support:using_git_repos_for_common_linux_scripts
+Please note that `sudo` or `su` may be required when running
+the `install` script because `root` permissions may be required
+to create the symbolic links.
 
-The scripts should be run from a normal user accout. However, the
-effective scripts will be located in `/usr/local/bin`, so `sudo` is required
-for installation, which requires `root` permissions.
+----
 
-
+(c) Martin Burnicki <martin.burnicki@meinberg.de>
